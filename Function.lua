@@ -2,6 +2,9 @@
 --// SERVICES
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
+local ContentProvider = game:GetService("ContentProvider")
+local Workspace = game:GetService("Workspace")
+
 local player = Players.LocalPlayer
 
 --// CONFIG - All magic numbers in one place
@@ -189,44 +192,63 @@ end
 --// =========================
 
 local ContentProvider = game:GetService("ContentProvider")
+--// STATE
+local running, paused, loopMode = false, false, false
 
---// ZONE PRELOADER (added)
-local function preloadArea(position)
-	local regionSize = 150
+--// ZONE CACHE
+local ZONE_SIZE = 200
+local zoneCache = {}
+
+local function zoneKey(pos)
+	return math.floor(pos.X/ZONE_SIZE)..":"..math.floor(pos.Y/ZONE_SIZE)..":"..math.floor(pos.Z/ZONE_SIZE)
+end
+
+local function loadZone(pos)
+	local key = zoneKey(pos)
+	if zoneCache[key] then return end
 
 	local region = Region3.new(
-		position - Vector3.new(regionSize, regionSize, regionSize),
-		position + Vector3.new(regionSize, regionSize, regionSize)
+		pos - Vector3.new(ZONE_SIZE,ZONE_SIZE,ZONE_SIZE),
+		pos + Vector3.new(ZONE_SIZE,ZONE_SIZE,ZONE_SIZE)
 	)
 
-	local parts = workspace:FindPartsInRegion3WithIgnoreList(
-		region,
-		{},
-		math.huge
-	)
+	local parts = Workspace:FindPartsInRegion3WithIgnoreList(region, {}, math.huge)
 
 	if #parts > 0 then
 		pcall(function()
 			ContentProvider:PreloadAsync(parts)
 		end)
 	end
+
+	zoneCache[key] = true
 end
 
---// TELEPORT (UPDATED)
-local function teleport(pos)
+--// PREDICTIVE LOADER
+local function predictiveLoad(world, i)
+	if world[i] then loadZone(world[i].Pos) end
+	if world[i+1] then task.spawn(function() loadZone(world[i+1].Pos) end) end
+	if world[i+2] then task.spawn(function() loadZone(world[i+2].Pos) end) end
+end
+
+--// SAFE MOVE (CORE SYSTEM)
+local function moveTo(pos)
 	local char = player.Character or player.CharacterAdded:Wait()
 	local hrp = char:WaitForChild("HumanoidRootPart")
 
-	-- 🔥 preload zone BEFORE teleport
-	preloadArea(pos)
+	loadZone(pos)
 
-	-- anti-physics glitch
 	hrp.AssemblyLinearVelocity = Vector3.zero
 	hrp.AssemblyAngularVelocity = Vector3.zero
 
-	-- teleport
-	hrp.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
+	hrp.CFrame = CFrame.new(pos + Vector3.new(0,3,0))
+
+	task.wait(0.12)
 end
+
+
+button("Loop Toggle", 145, function()
+	loopMode = not loopMode
+end)
 
 --// WORLDS (UNCHANGED)
 local World1 = {
@@ -248,6 +270,30 @@ local World2 = {
 
 --// SYSTEM STATE (UNCHANGED)
 local running, paused, loopMode = false, false, false
+
+-// MAIN LOOP SYSTEM
+local function runWorld(world)
+	if running then return end
+
+	running = true
+	paused = false
+
+	while running do
+		for i = 1, #world do
+			if not running then return end
+
+			while paused do task.wait(0.2) end
+
+			predictiveLoad(world, i)
+			moveTo(world[i].Pos)
+
+			task.wait(0.35)
+		end
+
+		if not loopMode then running = false end
+	end
+end
+
 
 --// AUTO RUN (UNCHANGED LOGIC)
 local function runWorld(world)
