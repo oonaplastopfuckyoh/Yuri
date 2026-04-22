@@ -27,7 +27,7 @@ local scaleValue = 1
 ------------------------------------------------
 local MAIN = Color3.fromRGB(170,90,255)
 local BG = Color3.fromRGB(15,15,20)
-local SIDEBAR_BG = Color3.fromRGB(20,20,28)
+local SIDEBAR_BG = Color3.fromRGB(12,12,16)
 local TEXT = MAIN
 
 ------------------------------------------------
@@ -51,17 +51,20 @@ topBar.BorderSizePixel = 0
 topBar.Parent = frame
 Instance.new("UICorner",topBar).CornerRadius = UDim.new(0,12)
 
+------------------------------------------------
+--// TITLE (COOLER FONT CHANGE)
+------------------------------------------------
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,0,1,0)
 title.Text = "Hub ni Yuri"
-title.Font = Enum.Font.GothamSemibold
-title.TextSize = 20
+title.Font = Enum.Font.Arcade -- 🔥 COOLER FONT
+title.TextSize = 22
 title.TextColor3 = MAIN
 title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// CLOSE + MINI SYSTEM
+--// CLOSE + MINI
 ------------------------------------------------
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,24,0,24)
@@ -86,35 +89,6 @@ mini.Visible = false
 mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
-------------------------------------------------
---// DRAG MINI "Y" (FIXED)
-------------------------------------------------
-do
-	local dragging = false
-	local start, pos
-
-	mini.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			start = i.Position
-			pos = mini.Position
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(i)
-		if dragging then
-			local d = i.Position - start
-			mini.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
-		end
-	end)
-
-	UserInputService.InputEnded:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
-end
-
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
 	mini.Visible = true
@@ -135,7 +109,7 @@ body.BackgroundTransparency = 1
 body.Parent = frame
 
 ------------------------------------------------
---// SIDEBAR (NO OUTLINE, CLEAN ONLY)
+--// SIDEBAR (FIXED)
 ------------------------------------------------
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0,125,1,0)
@@ -190,7 +164,7 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// ACTIVE BUTTON (NO GLOW, NO TEXT EFFECTS)
+--// ACTIVE BUTTON
 ------------------------------------------------
 local active
 
@@ -203,15 +177,15 @@ local function setActive(btn)
 end
 
 ------------------------------------------------
---// SIDEBAR BUTTONS (FIXED ALIGNMENT)
+--// SIDEBAR BUTTONS (SPACING FIXED + MAIN CENTERED)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
-	{"⚡   Auto","Auto"},
-	{"👤   Player","Player"},
-	{"🌐   Webhook","Webhook"},
-	{"•••   Misc","Misc"},
-	{"⚙️   Config","Config"}
+	{"⚡ Auto","Auto"},
+	{"👤 Player","Player"},
+	{"🌐 Webhook","Webhook"},
+	{"••• Misc","Misc"},
+	{"⚙️ Config","Config"}
 }
 
 for _,v in ipairs(tabs) do
@@ -220,15 +194,14 @@ for _,v in ipairs(tabs) do
 	b.BackgroundColor3 = Color3.fromRGB(18,18,22)
 	b.TextColor3 = MAIN
 	b.Font = Enum.Font.Gotham
-	b.TextSize = 13 -- FIXED SIZE MATCHING ICONS
-	b.TextXAlignment = Enum.TextXAlignment.Left
+	b.TextSize = 13
 
-	-- CENTER ONLY "Main"
 	if v[1] == "Main" then
-		b.Text = "  Main"
+		b.Text = "Main"
 		b.TextXAlignment = Enum.TextXAlignment.Center
 	else
-		b.Text = "   "..v[1]
+		b.Text = "    "..v[1] -- spacing preserved
+		b.TextXAlignment = Enum.TextXAlignment.Left
 	end
 
 	b.Parent = sidebar
@@ -239,42 +212,3 @@ for _,v in ipairs(tabs) do
 		setActive(b)
 	end)
 end
-
-------------------------------------------------
---// UI SCALE
-------------------------------------------------
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1,0,0,25)
-label.Text = "UI Scale: 100%"
-label.TextColor3 = MAIN
-label.BackgroundTransparency = 1
-label.Parent = Config
-
-local minus = Instance.new("TextButton")
-minus.Size = UDim2.new(0,30,0,30)
-minus.Position = UDim2.new(0,10,0,40)
-minus.Text = "-"
-minus.Parent = Config
-
-local plus = Instance.new("TextButton")
-plus.Size = UDim2.new(0,30,0,30)
-plus.Position = UDim2.new(0,50,0,40)
-plus.Text = "+"
-plus.Parent = Config
-
-local function refresh()
-	uiScale.Scale = scaleValue
-	label.Text = "UI Scale: "..math.floor(scaleValue*100).."%"
-end
-
-minus.MouseButton1Click:Connect(function()
-	scaleValue = math.clamp(scaleValue-0.1,0.5,1.5)
-	refresh()
-end)
-
-plus.MouseButton1Click:Connect(function()
-	scaleValue = math.clamp(scaleValue+0.1,0.5,1.5)
-	refresh()
-end)
-
-refresh()
