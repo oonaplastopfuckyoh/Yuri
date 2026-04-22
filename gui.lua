@@ -196,7 +196,7 @@ end
 --// SIDEBAR (REAL FIX: ICON + TEXT SEPARATE UI)
 ------------------------------------------------
 local tabs = {
-	{"Main","Main"},
+	{" ","Main"},
 	{"⚡","Auto"},
 	{"👤","Player"},
 	{"🌐","Webhook"},
