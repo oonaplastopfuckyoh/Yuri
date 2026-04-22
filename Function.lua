@@ -75,12 +75,7 @@ local function createButton(parent, size, pos, text, bgColor, textColor, cornerR
 end
 
 --// MAIN FRAME
-local frame = createFrame(gui,
-	UDim2.new(0, CONFIG.SIZES.FRAME_WIDTH, 0, CONFIG.SIZES.FRAME_HEIGHT),
-	UDim2.new(0.5, -215, 0.5, -145),
-	CONFIG.COLORS.BG,
-	CONFIG.SIZES.CORNER_RADIUS
-)
+local frame = createFrame(gui, UDim2.new(0, CONFIG.SIZES.FRAME_WIDTH, 0, CONFIG.SIZES.FRAME_HEIGHT), UDim2.new(0.5, -215, 0.5, -145), CONFIG.COLORS.BG, CONFIG.SIZES.CORNER_RADIUS)
 
 --// TOP BAR
 local topBar = createFrame(frame, UDim2.new(1, 0, 0.18, 0), UDim2.new(0, 0, 0, 0), CONFIG.COLORS.DARK, CONFIG.SIZES.CORNER_RADIUS)
@@ -184,15 +179,27 @@ local function switch(tab)
 end
 
 --// =========================
---// AUTO TELEPORT SYSTEM ADD
+--// TELEPORT SYSTEM MODULE
 --// =========================
 
+local running = false
+local paused = false
+local loopMode = false
+
+--// SAFE TELEPORT FUNCTION (FIXES LAG / FREEZE)
 local function teleport(pos)
-	local char = player.Character or player.CharacterAdded:Wait()
-	local hrp = char:WaitForChild("HumanoidRootPart")
+	local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	-- prevents physics stacking (main cause of "game pause")
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
+
 	hrp.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
 end
 
+--// WORLD ROUTES (example format - keep yours or replace)
 local World1 = {
 	{Name="Lawless",Pos=Vector3.new(52.3,0.6,1814.5)},
 	{Name="Ninja",Pos=Vector3.new(-1344.1,1604.4,1590.8)},
@@ -210,66 +217,105 @@ local World2 = {
 	{Name="Starter",Pos=Vector3.new(-325.4,-3.7,-122.0)},
 }
 
-local running, paused, loopMode = false, false, false
+--// =========================
+--// INSTANT TELEPORT MODE
+--// =========================
+local function instantTP(world)
+	for i = 1, #world do
+		if not world[i] then return end
+		teleport(world[i].Pos)
+		task.wait(0.1) -- fast chain teleport
+	end
+end
 
-local function runWorld(world)
+--// =========================
+--// AUTO TELEPORT MODE
+--// =========================
+local function autoTP(world)
 	running = true
 	paused = false
 
 	while running do
 		for i = 1, #world do
 			if not running then return end
-			while paused do task.wait(0.1) end
+
+			while paused do
+				task.wait(0.1)
+			end
 
 			teleport(world[i].Pos)
-			task.wait(0.1)
+
+			task.wait(0.25) -- safe interval (prevents lag / freeze)
 		end
 
-		if not loopMode then running = false end
+		if not loopMode then
+			running = false
+		end
 	end
 end
 
---// AUTO UI
-local function makeBtn(text, y, func)
-	local b = createButton(Auto,
-		UDim2.new(0, 200, 0, 35),
-		UDim2.new(0, 10, 0, y),
-		text,
-		CONFIG.COLORS.BTN_INACTIVE,
-		CONFIG.COLORS.MAIN,
-		6
-	)
-	b.MouseButton1Click:Connect(func)
-end
+--// =========================
+--// CONTROLS (USE IN BUTTONS)
+--// =========================
 
-makeBtn("World 1 TP", 10, function() runWorld(World1) end)
-makeBtn("World 2 TP", 55, function() runWorld(World2) end)
-makeBtn("Pause / Resume", 100, function() paused = not paused end)
-makeBtn("Stop", 145, function() running = false paused = false end)
-makeBtn("Loop Mode", 190, function() loopMode = not loopMode end)
-
---// SIDEBAR TABS
-local tabs = {
-	{"","main","Home"},
-	{"⚡","Auto","Auto"},
-	{"👤","Player","Player"},
-	{"🌐","Webhook","Webhook"},
-	{"•••","Misc","Misc"},
-	{"⚙️","Config","Config"}
-}
-
-for _,t in ipairs(tabs) do
-	local btn = createButton(sidebar, UDim2.new(1, -10, 0, 30), UDim2.new(0, 0, 0, 0), "", CONFIG.COLORS.BTN_INACTIVE, CONFIG.COLORS.MAIN, 8)
-
-	createLabel(btn, t[1], UDim2.new(0, 22, 1, 0), UDim2.new(0, 8, 0, 0), Enum.Font.Gotham, 14, CONFIG.COLORS.MAIN, 1)
-	createLabel(btn, t[3], UDim2.new(1, -40, 1, 0), UDim2.new(0, 35, 0, 0), Enum.Font.Gotham, 15, CONFIG.COLORS.MAIN, 1).TextXAlignment = Enum.TextXAlignment.Left
-
-	btn.MouseButton1Click:Connect(function()
-		switch(t[2])
+local function startAuto(world)
+	task.spawn(function()
+		autoTP(world)
 	end)
 end
 
---// CLOSE / MINI
+local function startInstant(world)
+	task.spawn(function()
+		instantTP(world)
+	end)
+end
+
+local function pauseToggle()
+	paused = not paused
+end
+
+local function stopAuto()
+	running = false
+	paused = false
+end
+
+local function toggleLoop()
+	loopMode = not loopMode
+end
+
+--// ACTIVE TAB
+local activeBtn
+local function setActive(btn)
+	if activeBtn then
+		activeBtn.BackgroundColor3 = CONFIG.COLORS.BTN_INACTIVE
+	end
+	activeBtn = btn
+	btn.BackgroundColor3 = CONFIG.COLORS.BTN_ACTIVE
+end
+
+--// TABS
+local tabs = {
+	{icon = "", name = "main", displayName = "Home"},
+	{icon = "⚡", name = "Auto", displayName = "Auto"},
+	{icon = "👤", name = "Player", displayName = "Player"},
+	{icon = "🌐", name = "Webhook", displayName = "Webhook"},
+	{icon = "•••", name = "Misc", displayName = "Misc"},
+	{icon = "⚙️", name = "Config", displayName = "Config"}
+}
+
+for _, tab in ipairs(tabs) do
+	local btn = createButton(sidebar, UDim2.new(1, -10, 0, 30), UDim2.new(0, 0, 0, 0), "", CONFIG.COLORS.BTN_INACTIVE, CONFIG.COLORS.MAIN, 8)
+	
+	createLabel(btn, tab.icon, UDim2.new(0, 22, 1, 0), UDim2.new(0, 8, 0, 0), Enum.Font.Gotham, 14, CONFIG.COLORS.MAIN, 1)
+	createLabel(btn, tab.displayName, UDim2.new(1, -40, 1, 0), UDim2.new(0, 35, 0, 0), Enum.Font.Gotham, 15, CONFIG.COLORS.MAIN, 1).TextXAlignment = Enum.TextXAlignment.Left
+
+	btn.MouseButton1Click:Connect(function()
+		switch(tab.name)
+		setActive(btn)
+	end)
+end
+
+--// CLOSE / MINI TOGGLE
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
 	mini.Visible = true
