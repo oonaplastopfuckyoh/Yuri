@@ -14,13 +14,6 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 ------------------------------------------------
---// UI SCALE
-------------------------------------------------
-local uiScale = Instance.new("UIScale")
-uiScale.Scale = 1
-uiScale.Parent = gui
-
-------------------------------------------------
 --// COLORS
 ------------------------------------------------
 local MAIN = Color3.fromRGB(170,90,255)
@@ -58,7 +51,7 @@ title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// CLOSE + MINI (UNCHANGED)
+--// CLOSE + MINI
 ------------------------------------------------
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,24,0,24)
@@ -84,7 +77,7 @@ mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// DRAG (UNCHANGED)
+--// DRAG
 ------------------------------------------------
 local function makeDraggable(obj, dragPart)
 	local dragging = false
@@ -149,7 +142,7 @@ pad.PaddingLeft = UDim.new(0,8)
 pad.Parent = sidebar
 
 ------------------------------------------------
---// PAGE SYSTEM (UNCHANGED LOGIC)
+--// PAGE SYSTEM (IMPORTANT FIX)
 ------------------------------------------------
 local pageHolder = Instance.new("Frame")
 pageHolder.Size = UDim2.new(1,-125,1,0)
@@ -169,12 +162,14 @@ local function newPage(name)
 	return p
 end
 
-newPage("Main").Visible = true
-newPage("Auto")
-newPage("Player")
-newPage("Webhook")
-newPage("Misc")
-newPage("Config")
+local Main = newPage("Main")
+local Auto = newPage("Auto")
+local PlayerP = newPage("Player")
+local Webhook = newPage("Webhook")
+local Misc = newPage("Misc")
+local Config = newPage("Config")
+
+Main.Visible = true
 
 local function switch(tab)
 	for n,p in pairs(pages) do
@@ -183,7 +178,27 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// SIDEBAR BUTTONS (FIXED SPACING ONLY)
+--// ACTIVE SYSTEM
+------------------------------------------------
+local activeBtn
+
+local function setActive(btn)
+	if activeBtn then
+		activeBtn.BackgroundColor3 = Color3.fromRGB(18,18,22)
+	end
+	activeBtn = btn
+	btn.BackgroundColor3 = Color3.fromRGB(60,30,110)
+end
+
+------------------------------------------------
+--// TEST FUNCTION
+------------------------------------------------
+local function test(name)
+	print("[YURI HUB] "..name.." page working")
+end
+
+------------------------------------------------
+--// SIDEBAR BUTTONS (MULTI PAGE READY)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -215,7 +230,6 @@ for _,v in ipairs(tabs) do
 	b.TextSize = 13
 	b.TextXAlignment = Enum.TextXAlignment.Left
 
-	-- ✔ REAL spacing fix (BIG gap between icon and text)
 	if key == "Main" then
 		b.Text = "Main"
 		b.TextXAlignment = Enum.TextXAlignment.Center
@@ -228,5 +242,7 @@ for _,v in ipairs(tabs) do
 
 	b.MouseButton1Click:Connect(function()
 		switch(key)
+		setActive(b)
+		test(key)
 	end)
 end
