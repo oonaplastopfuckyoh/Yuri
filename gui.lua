@@ -207,11 +207,11 @@ end
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
-	{"⚡ Auto","Auto"},
-	{"👤 Player","Player"},
-	{"🌐 Webhook","Webhook"},
-	{"••• Misc","Misc"},
-	{"⚙️ Config","Config"}
+	{"⚡   Auto","Auto"},
+	{"👤   Player","Player"},
+	{"🌐   Webhook","Webhook"},
+	{"•••   Misc","Misc"},
+	{"⚙️   Config","Config"}
 }
 
 for _,v in ipairs(tabs) do
@@ -225,7 +225,7 @@ for _,v in ipairs(tabs) do
 
 	-- CENTER ONLY "Main"
 	if v[1] == "Main" then
-		b.Text = "      Main"
+		b.Text = "  Main"
 		b.TextXAlignment = Enum.TextXAlignment.Center
 	else
 		b.Text = "   "..v[1]
