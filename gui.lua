@@ -77,7 +77,7 @@ mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// DRAG FIX
+--// DRAG SYSTEM
 ------------------------------------------------
 local function drag(obj, handle)
 	local dragging = false
@@ -94,16 +94,11 @@ local function drag(obj, handle)
 	UserInputService.InputChanged:Connect(function(i)
 		if dragging then
 			local d = i.Position - start
-			obj.Position = UDim2.new(
-				pos.X.Scale,
-				pos.X.Offset + d.X,
-				pos.Y.Scale,
-				pos.Y.Offset + d.Y
-			)
+			obj.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
 		end
 	end)
 
-	UserInputService.InputEnded:Connect(function(i)
+	UserInputService.InputEnded:Connect(function()
 		dragging = false
 	end)
 end
@@ -193,10 +188,10 @@ local function test(name)
 end
 
 ------------------------------------------------
---// SIDEBAR (REAL FIX: ICON + TEXT SEPARATE UI)
+--// SIDEBAR BUTTONS (FIXED MAIN ISSUE)
 ------------------------------------------------
 local tabs = {
-	{" ","Main"},
+	{"Main","Main"},
 	{"⚡","Auto"},
 	{"👤","Player"},
 	{"🌐","Webhook"},
@@ -223,28 +218,39 @@ for _,v in ipairs(tabs) do
 	btn.Parent = sidebar
 	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
-	-- icon (real separation)
-	local ic = Instance.new("TextLabel")
-	ic.Size = UDim2.new(0,20,1,0)
-	ic.Position = UDim2.new(0,8,0,0)
-	ic.BackgroundTransparency = 1
-	ic.Text = icon
-	ic.TextColor3 = MAIN
-	ic.Font = Enum.Font.Gotham
-	ic.TextSize = 14
-	ic.Parent = btn
+	-- SPECIAL MAIN FIX (NO DOUBLE LOOK)
+	if key == "Main" then
+		local tx = Instance.new("TextLabel")
+		tx.Size = UDim2.new(1,0,1,0)
+		tx.BackgroundTransparency = 1
+		tx.Text = "Main"
+		tx.TextColor3 = MAIN
+		tx.Font = Enum.Font.GothamBold
+		tx.TextSize = 13
+		tx.TextXAlignment = Enum.TextXAlignment.Center
+		tx.Parent = btn
+	else
+		local ic = Instance.new("TextLabel")
+		ic.Size = UDim2.new(0,20,1,0)
+		ic.Position = UDim2.new(0,8,0,0)
+		ic.BackgroundTransparency = 1
+		ic.Text = icon
+		ic.TextColor3 = MAIN
+		ic.Font = Enum.Font.Gotham
+		ic.TextSize = 14
+		ic.Parent = btn
 
-	-- text (real separation)
-	local tx = Instance.new("TextLabel")
-	tx.Size = UDim2.new(1,-40,1,0)
-	tx.Position = UDim2.new(0,32,0,0)
-	tx.BackgroundTransparency = 1
-	tx.Text = names[key]
-	tx.TextColor3 = MAIN
-	tx.Font = Enum.Font.Gotham
-	tx.TextSize = 13
-	tx.TextXAlignment = Enum.TextXAlignment.Left
-	tx.Parent = btn
+		local tx = Instance.new("TextLabel")
+		tx.Size = UDim2.new(1,-40,1,0)
+		tx.Position = UDim2.new(0,32,0,0)
+		tx.BackgroundTransparency = 1
+		tx.Text = names[key]
+		tx.TextColor3 = MAIN
+		tx.Font = Enum.Font.Gotham
+		tx.TextSize = 13
+		tx.TextXAlignment = Enum.TextXAlignment.Left
+		tx.Parent = btn
+	end
 
 	btn.MouseButton1Click:Connect(function()
 		switch(key)
