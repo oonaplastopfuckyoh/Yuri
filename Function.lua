@@ -1,7 +1,3 @@
-local Workspace = game:GetService("Workspace")
-
-Workspace.StreamingEnabled = false
-Workspace.StreamingMinRadius = 1000000
 
 --// SERVICES
 local Players = game:GetService("Players")
@@ -192,12 +188,47 @@ end
 --// AUTO TELEPORT SYSTEM ADD
 --// =========================
 
+local ContentProvider = game:GetService("ContentProvider")
+
+--// ZONE PRELOADER (added)
+local function preloadArea(position)
+	local regionSize = 150
+
+	local region = Region3.new(
+		position - Vector3.new(regionSize, regionSize, regionSize),
+		position + Vector3.new(regionSize, regionSize, regionSize)
+	)
+
+	local parts = workspace:FindPartsInRegion3WithIgnoreList(
+		region,
+		{},
+		math.huge
+	)
+
+	if #parts > 0 then
+		pcall(function()
+			ContentProvider:PreloadAsync(parts)
+		end)
+	end
+end
+
+--// TELEPORT (UPDATED)
 local function teleport(pos)
 	local char = player.Character or player.CharacterAdded:Wait()
 	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	-- 🔥 preload zone BEFORE teleport
+	preloadArea(pos)
+
+	-- anti-physics glitch
+	hrp.AssemblyLinearVelocity = Vector3.zero
+	hrp.AssemblyAngularVelocity = Vector3.zero
+
+	-- teleport
 	hrp.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
 end
 
+--// WORLDS (UNCHANGED)
 local World1 = {
 	{Name="Lawless",Pos=Vector3.new(52.3,0.6,1814.5)},
 	{Name="Ninja",Pos=Vector3.new(-1344.1,1604.4,1590.8)},
@@ -215,8 +246,10 @@ local World2 = {
 	{Name="Starter",Pos=Vector3.new(-325.4,-3.7,-122.0)},
 }
 
+--// SYSTEM STATE (UNCHANGED)
 local running, paused, loopMode = false, false, false
 
+--// AUTO RUN (UNCHANGED LOGIC)
 local function runWorld(world)
 	running = true
 	paused = false
@@ -224,19 +257,25 @@ local function runWorld(world)
 	while running do
 		for i = 1, #world do
 			if not running then return end
-			while paused do task.wait(0.25) end
+
+			while paused do
+				task.wait(0.25)
+			end
 
 			teleport(world[i].Pos)
 			task.wait(0.25)
 		end
 
-		if not loopMode then running = false end
+		if not loopMode then
+			running = false
+		end
 	end
 end
 
---// AUTO UI
+--// UI BUTTONS (UNCHANGED)
 local function makeBtn(text, y, func)
-	local b = createButton(Auto,
+	local b = createButton(
+		Auto,
 		UDim2.new(0, 200, 0, 35),
 		UDim2.new(0, 10, 0, y),
 		text,
