@@ -16,16 +16,136 @@ gui.Parent = player:WaitForChild("PlayerGui")
 ------------------------------------------------
 --// UI SCALE SYSTEM (CONFIG CONTROLLED)
 ------------------------------------------------
-local uiScale = Instance.new("UIScale")
-uiScale.Parent = gui
 
-local currentScale = 1
-local function applyScale()
+------------------------------------------------
+--// CONFIG UI SCALE (SLIDER VERSION)
+------------------------------------------------
+
+local scaleHolder = Instance.new("Frame")
+scaleHolder.Size = UDim2.new(0.9,0,0,60)
+scaleHolder.Position = UDim2.new(0.05,0,0,20)
+scaleHolder.BackgroundTransparency = 1
+scaleHolder.Parent = Config
+
+-- LABEL
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(0.3,0,0,20)
+label.Position = UDim2.new(0,0,0,0)
+label.Text = "UI Scale"
+label.TextColor3 = Color3.fromRGB(255,255,255)
+label.BackgroundTransparency = 1
+label.Font = Enum.Font.Gotham
+label.TextSize = 12
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.Parent = scaleHolder
+
+-- PERCENT DISPLAY
+local percent = Instance.new("TextLabel")
+percent.Size = UDim2.new(0.2,0,0,20)
+percent.Position = UDim2.new(0.35,0,0,0)
+percent.Text = "100%"
+percent.TextColor3 = Color3.fromRGB(180,180,180)
+percent.BackgroundTransparency = 1
+percent.Font = Enum.Font.Gotham
+percent.TextSize = 12
+percent.Parent = scaleHolder
+
+-- SLIDER BAR BACKGROUND
+local barBG = Instance.new("Frame")
+barBG.Size = UDim2.new(0.6,0,0,10)
+barBG.Position = UDim2.new(0,0,0,30)
+barBG.BackgroundColor3 = Color3.fromRGB(40,40,40)
+barBG.Parent = scaleHolder
+Instance.new("UICorner",barBG).CornerRadius = UDim.new(1,0)
+
+-- SLIDER FILL
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.new(0.5,0,1,0)
+barFill.BackgroundColor3 = Color3.fromRGB(170,90,255)
+barFill.Parent = barBG
+Instance.new("UICorner",barFill).CornerRadius = UDim.new(1,0)
+
+-- DRAG HANDLE
+local handle = Instance.new("Frame")
+handle.Size = UDim2.new(0,14,0,14)
+handle.Position = UDim2.new(0.5,-7,0.5,-7)
+handle.BackgroundColor3 = Color3.fromRGB(255,255,255)
+handle.Parent = barBG
+Instance.new("UICorner",handle).CornerRadius = UDim.new(1,0)
+
+-- +/- BUTTONS
+local minus = Instance.new("TextButton")
+minus.Size = UDim2.new(0,25,0,25)
+minus.Position = UDim2.new(0.65,0,0,22)
+minus.Text = "-"
+minus.BackgroundColor3 = Color3.fromRGB(60,60,60)
+minus.TextColor3 = Color3.fromRGB(255,255,255)
+minus.Font = Enum.Font.GothamBold
+minus.TextSize = 14
+minus.Parent = scaleHolder
+Instance.new("UICorner",minus).CornerRadius = UDim.new(0,6)
+
+local plus = Instance.new("TextButton")
+plus.Size = UDim2.new(0,25,0,25)
+plus.Position = UDim2.new(0.75,0,0,22)
+plus.Text = "+"
+plus.BackgroundColor3 = Color3.fromRGB(60,60,60)
+plus.TextColor3 = Color3.fromRGB(255,255,255)
+plus.Font = Enum.Font.GothamBold
+plus.TextSize = 14
+plus.Parent = scaleHolder
+Instance.new("UICorner",plus).CornerRadius = UDim.new(0,6)
+
+------------------------------------------------
+--// LOGIC
+------------------------------------------------
+local dragging = false
+
+local function updateUI()
 	uiScale.Scale = currentScale
+	percent.Text = math.floor(currentScale * 100) .. "%"
+
+	barFill.Size = UDim2.new((currentScale - 0.5) / 1, 0, 1, 0)
+	handle.Position = UDim2.new((currentScale - 0.5) / 1, -7, 0.5, -7)
 end
 
-applyScale()
+local function setScale(v)
+	currentScale = math.clamp(v, 0.5, 1.5)
+	updateUI()
+end
 
+-- SLIDER DRAG
+barBG.InputBegan:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(i)
+	if not dragging then return end
+	if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
+
+		local x = (i.Position.X - barBG.AbsolutePosition.X) / barBG.AbsoluteSize.X
+		setScale(0.5 + math.clamp(x,0,1))
+	end
+end)
+
+-- BUTTONS
+minus.MouseButton1Click:Connect(function()
+	setScale(currentScale - 0.1)
+end)
+
+plus.MouseButton1Click:Connect(function()
+	setScale(currentScale + 0.1)
+end)
+
+updateUI()
 ------------------------------------------------
 --// MAIN FRAME
 ------------------------------------------------
