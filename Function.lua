@@ -179,6 +179,56 @@ local function switch(tab)
 end
 
 --// =========================
+--// AUTO PAGE BUTTONS
+--// =========================
+
+local function createAutoButton(text, y, callback)
+	local btn = createButton(
+		Auto,
+		UDim2.new(0, 200, 0, 35),
+		UDim2.new(0, 10, 0, y),
+		text,
+		CONFIG.COLORS.BTN_INACTIVE,
+		CONFIG.COLORS.MAIN,
+		6
+	)
+
+	btn.MouseButton1Click:Connect(callback)
+	return btn
+end
+
+--// WORLD BUTTONS
+createAutoButton("World 1 Auto TP", 10, function()
+	startAuto(World1)
+end)
+
+createAutoButton("World 2 Auto TP", 55, function()
+	startAuto(World2)
+end)
+
+--// INSTANT MODE BUTTONS
+createAutoButton("World 1 Instant TP", 100, function()
+	startInstant(World1)
+end)
+
+createAutoButton("World 2 Instant TP", 145, function()
+	startInstant(World2)
+end)
+
+--// CONTROLS
+createAutoButton("Pause / Resume", 190, function()
+	pauseToggle()
+end)
+
+createAutoButton("Stop", 235, function()
+	stopAuto()
+end)
+
+createAutoButton("Loop Toggle", 280, function()
+	toggleLoop()
+end)
+
+--// =========================
 --// TELEPORT SYSTEM MODULE
 --// =========================
 
