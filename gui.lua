@@ -196,7 +196,7 @@ end
 --// SIDEBAR (FIXED — NO DUPLICATE MAIN ISSUE)
 ------------------------------------------------
 local tabs = {
-	{"Main","Main"},
+	{" ","Main"},
 	{"⚡","Auto"},
 	{"👤","Player"},
 	{"🌐","Webhook"},
