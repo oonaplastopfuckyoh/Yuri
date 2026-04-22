@@ -159,6 +159,18 @@ local function newPage(name)
 	local p = createFrame(pageHolder, UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), CONFIG.COLORS.BG, 0)
 	p.BackgroundTransparency = 1
 	p.Visible = false
+	
+	-- ADD UIISTLAYOUT FOR PAGES
+	local pageList = Instance.new("UIListLayout")
+	pageList.Padding = UDim.new(0, 6)
+	pageList.Parent = p
+	
+	-- ADD PADDING FOR PAGES
+	local pagePad = Instance.new("UIPadding")
+	pagePad.PaddingTop = UDim.new(0, 10)
+	pagePad.PaddingLeft = UDim.new(0, 10)
+	pagePad.Parent = p
+	
 	pages[name] = p
 	return p
 end
@@ -369,6 +381,21 @@ end
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
 	mini.Visible = true
+end)
+
+mini.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	mini.Visible = false
+end)
+
+--// CLEANUP
+local connection
+connection = Players.PlayerRemoving:Connect(function(p)
+	if p == player then
+		gui:Destroy()
+		connection:Disconnect()
+	end
+end)
 end)
 
 mini.MouseButton1Click:Connect(function()
