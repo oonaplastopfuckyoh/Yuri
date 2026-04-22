@@ -195,7 +195,7 @@ end
 --// SIDEBAR (FINAL CLEAN)
 ------------------------------------------------
 local tabs = {
-	{"","Main"},
+	{"","main"},
 	{"⚡","Auto"},
 	{"👤","Player"},
 	{"🌐","Webhook"},
@@ -220,7 +220,7 @@ for _,v in ipairs(tabs) do
 	ic.Text = icon
 	ic.TextColor3 = MAIN
 	ic.Font = Enum.Font.Gotham
-	ic.TextSize = 14
+	ic.TextSize = 16
 	ic.Parent = btn
 
 	local tx = Instance.new("TextLabel")
@@ -230,7 +230,7 @@ for _,v in ipairs(tabs) do
 	tx.Text = key
 	tx.TextColor3 = MAIN
 	tx.Font = Enum.Font.Gotham
-	tx.TextSize = 13
+	tx.TextSize = 15
 	tx.TextXAlignment = Enum.TextXAlignment.Left
 	tx.Parent = btn
 
