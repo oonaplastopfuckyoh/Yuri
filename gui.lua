@@ -28,7 +28,6 @@ local scaleValue = 1
 local MAIN = Color3.fromRGB(170,90,255)
 local BG = Color3.fromRGB(15,15,20)
 local SIDEBAR_BG = Color3.fromRGB(12,12,16)
-local TEXT = MAIN
 
 ------------------------------------------------
 --// MAIN FRAME
@@ -51,24 +50,21 @@ topBar.BorderSizePixel = 0
 topBar.Parent = frame
 Instance.new("UICorner",topBar).CornerRadius = UDim.new(0,12)
 
-------------------------------------------------
---// TITLE (COOLER FONT CHANGE)
-------------------------------------------------
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,0,1,0)
 title.Text = "Hub ni Yuri"
-title.Font = Enum.Font.Arcade -- 🔥 COOLER FONT
+title.Font = Enum.Font.Arcade
 title.TextSize = 22
 title.TextColor3 = MAIN
 title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// CLOSE + MINI
+--// CLOSE BUTTON (MOVED LEFT)
 ------------------------------------------------
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,24,0,24)
-closeBtn.Position = UDim2.new(1,-30,0.5,-12)
+closeBtn.Position = UDim2.new(1,-40,0.5,-12) -- FIXED (moved left)
 closeBtn.Text = "×"
 closeBtn.BackgroundColor3 = Color3.fromRGB(255,70,120)
 closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
@@ -77,6 +73,9 @@ closeBtn.TextSize = 14
 closeBtn.Parent = topBar
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
 
+------------------------------------------------
+--// MINI UI (Y)
+------------------------------------------------
 local mini = Instance.new("TextButton")
 mini.Size = UDim2.new(0,42,0,42)
 mini.Position = UDim2.new(0,20,0.5,-21)
@@ -89,18 +88,76 @@ mini.Visible = false
 mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
-closeBtn.MouseButton1Click:Connect(function()
-	frame.Visible = false
-	mini.Visible = true
-end)
+------------------------------------------------
+--// DRAG MAIN UI (FIXED)
+------------------------------------------------
+do
+	local dragging = false
+	local start, pos
 
-mini.MouseButton1Click:Connect(function()
-	frame.Visible = true
-	mini.Visible = false
-end)
+	topBar.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			start = i.Position
+			pos = frame.Position
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(i)
+		if dragging then
+			local d = i.Position - start
+			frame.Position = UDim2.new(
+				pos.X.Scale,
+				pos.X.Offset + d.X,
+				pos.Y.Scale,
+				pos.Y.Offset + d.Y
+			)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
+end
 
 ------------------------------------------------
---// BODY
+--// DRAG MINI UI (FIXED)
+------------------------------------------------
+do
+	local dragging = false
+	local start, pos
+
+	mini.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			start = i.Position
+			pos = mini.Position
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(i)
+		if dragging then
+			local d = i.Position - start
+			mini.Position = UDim2.new(
+				pos.X.Scale,
+				pos.X.Offset + d.X,
+				pos.Y.Scale,
+				pos.Y.Offset + d.Y
+			)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
+end
+
+------------------------------------------------
+--// BODY + SIDEBAR
 ------------------------------------------------
 local body = Instance.new("Frame")
 body.Size = UDim2.new(1,0,0.82,0)
@@ -108,9 +165,6 @@ body.Position = UDim2.new(0,0,0.18,0)
 body.BackgroundTransparency = 1
 body.Parent = frame
 
-------------------------------------------------
---// SIDEBAR (FIXED)
-------------------------------------------------
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0,125,1,0)
 sidebar.BackgroundColor3 = SIDEBAR_BG
@@ -128,56 +182,7 @@ pad.PaddingLeft = UDim.new(0,8)
 pad.Parent = sidebar
 
 ------------------------------------------------
---// PAGE AREA
-------------------------------------------------
-local pageHolder = Instance.new("Frame")
-pageHolder.Size = UDim2.new(1,-125,1,0)
-pageHolder.Position = UDim2.new(0,125,0,0)
-pageHolder.BackgroundTransparency = 1
-pageHolder.Parent = body
-
-local pages = {}
-
-local function newPage(name)
-	local p = Instance.new("Frame")
-	p.Size = UDim2.new(1,0,1,0)
-	p.BackgroundTransparency = 1
-	p.Visible = false
-	p.Parent = pageHolder
-	pages[name] = p
-	return p
-end
-
-local Main = newPage("Main")
-local Auto = newPage("Auto")
-local PlayerP = newPage("Player")
-local Webhook = newPage("Webhook")
-local Misc = newPage("Misc")
-local Config = newPage("Config")
-
-Main.Visible = true
-
-local function switch(tab)
-	for n,p in pairs(pages) do
-		p.Visible = (n == tab)
-	end
-end
-
-------------------------------------------------
---// ACTIVE BUTTON
-------------------------------------------------
-local active
-
-local function setActive(btn)
-	if active then
-		active.BackgroundColor3 = Color3.fromRGB(18,18,22)
-	end
-	active = btn
-	btn.BackgroundColor3 = Color3.fromRGB(40,20,70)
-end
-
-------------------------------------------------
---// SIDEBAR BUTTONS (SPACING FIXED + MAIN CENTERED)
+--// SIDEBAR BUTTONS (2X SPACING FIX)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -200,15 +205,10 @@ for _,v in ipairs(tabs) do
 		b.Text = "Main"
 		b.TextXAlignment = Enum.TextXAlignment.Center
 	else
-		b.Text = "    "..v[1] -- spacing preserved
+		b.Text = "        "..v[1] -- 2X MORE SPACE ADDED HERE
 		b.TextXAlignment = Enum.TextXAlignment.Left
 	end
 
 	b.Parent = sidebar
 	Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
-
-	b.MouseButton1Click:Connect(function()
-		switch(v[2])
-		setActive(b)
-	end)
 end
