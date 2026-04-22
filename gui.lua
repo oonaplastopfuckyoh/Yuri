@@ -6,11 +6,14 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
---// GUI SINGLE INSTANCE FIX
+--// PREVENT DUPLICATE GUI
 ------------------------------------------------
 local old = player:WaitForChild("PlayerGui"):FindFirstChild("YuriHub")
 if old then old:Destroy() end
 
+------------------------------------------------
+--// GUI
+------------------------------------------------
 local gui = Instance.new("ScreenGui")
 gui.Name = "YuriHub"
 gui.ResetOnSpawn = false
@@ -24,7 +27,7 @@ local BG = Color3.fromRGB(15,15,20)
 local SIDEBAR_BG = Color3.fromRGB(12,12,16)
 
 ------------------------------------------------
---// FRAME
+--// MAIN FRAME
 ------------------------------------------------
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0,430,0,290)
@@ -54,7 +57,7 @@ title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// CLOSE
+--// CLOSE BUTTON
 ------------------------------------------------
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,24,0,24)
@@ -68,7 +71,22 @@ closeBtn.Parent = topBar
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// DRAG
+--// MINI Y BUTTON (FIXED)
+------------------------------------------------
+local mini = Instance.new("TextButton")
+mini.Size = UDim2.new(0,42,0,42)
+mini.Position = UDim2.new(0,20,0.5,-21)
+mini.Text = "Y"
+mini.BackgroundColor3 = MAIN
+mini.TextColor3 = Color3.fromRGB(255,255,255)
+mini.Font = Enum.Font.GothamBold
+mini.TextSize = 18
+mini.Visible = false
+mini.Parent = gui
+Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
+
+------------------------------------------------
+--// DRAG FUNCTION
 ------------------------------------------------
 local function drag(obj, handle)
 	local dragging = false
@@ -95,6 +113,7 @@ local function drag(obj, handle)
 end
 
 drag(frame, topBar)
+drag(mini)
 
 ------------------------------------------------
 --// BODY
@@ -173,12 +192,10 @@ local function setActive(btn)
 end
 
 ------------------------------------------------
---// SIDEBAR (FINAL FIX)
--- ✔ NO "MAIN MAIN"
--- ✔ FIRST VALUE IS ONLY VISUAL SPACE SLOT
+--// SIDEBAR (FINAL CLEAN)
 ------------------------------------------------
 local tabs = {
-	{"","Main"}, -- ✔ FIX: first is empty so no duplicate look
+	{"","Main"},
 	{"⚡","Auto"},
 	{"👤","Player"},
 	{"🌐","Webhook"},
@@ -196,7 +213,6 @@ for _,v in ipairs(tabs) do
 	btn.Parent = sidebar
 	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
-	-- ICON SLOT
 	local ic = Instance.new("TextLabel")
 	ic.Size = UDim2.new(0,22,1,0)
 	ic.Position = UDim2.new(0,8,0,0)
@@ -207,7 +223,6 @@ for _,v in ipairs(tabs) do
 	ic.TextSize = 14
 	ic.Parent = btn
 
-	-- TEXT SLOT
 	local tx = Instance.new("TextLabel")
 	tx.Size = UDim2.new(1,-40,1,0)
 	tx.Position = UDim2.new(0,35,0,0)
@@ -226,8 +241,14 @@ for _,v in ipairs(tabs) do
 end
 
 ------------------------------------------------
---// CLOSE
+--// CLOSE + MINI TOGGLE (FIXED)
 ------------------------------------------------
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
+	mini.Visible = true
+end)
+
+mini.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	mini.Visible = false
 end)
