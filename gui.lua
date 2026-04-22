@@ -77,7 +77,7 @@ mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// DRAG SYSTEM
+--// DRAG
 ------------------------------------------------
 local function drag(obj, handle)
 	local dragging = false
@@ -94,7 +94,12 @@ local function drag(obj, handle)
 	UserInputService.InputChanged:Connect(function(i)
 		if dragging then
 			local d = i.Position - start
-			obj.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
+			obj.Position = UDim2.new(
+				pos.X.Scale,
+				pos.X.Offset + d.X,
+				pos.Y.Scale,
+				pos.Y.Offset + d.Y
+			)
 		end
 	end)
 
@@ -188,7 +193,7 @@ local function test(name)
 end
 
 ------------------------------------------------
---// SIDEBAR BUTTONS (FIXED MAIN ISSUE)
+--// SIDEBAR (FIXED — NO DUPLICATE MAIN ISSUE)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -197,15 +202,6 @@ local tabs = {
 	{"🌐","Webhook"},
 	{"•••","Misc"},
 	{"⚙️","Config"}
-}
-
-local names = {
-	Main="Main",
-	Auto="Auto",
-	Player="Player",
-	Webhook="Webhook",
-	Misc="Misc",
-	Config="Config"
 }
 
 for _,v in ipairs(tabs) do
@@ -218,39 +214,28 @@ for _,v in ipairs(tabs) do
 	btn.Parent = sidebar
 	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
-	-- SPECIAL MAIN FIX (NO DOUBLE LOOK)
-	if key == "Main" then
-		local tx = Instance.new("TextLabel")
-		tx.Size = UDim2.new(1,0,1,0)
-		tx.BackgroundTransparency = 1
-		tx.Text = "Main"
-		tx.TextColor3 = MAIN
-		tx.Font = Enum.Font.GothamBold
-		tx.TextSize = 13
-		tx.TextXAlignment = Enum.TextXAlignment.Center
-		tx.Parent = btn
-	else
-		local ic = Instance.new("TextLabel")
-		ic.Size = UDim2.new(0,20,1,0)
-		ic.Position = UDim2.new(0,8,0,0)
-		ic.BackgroundTransparency = 1
-		ic.Text = icon
-		ic.TextColor3 = MAIN
-		ic.Font = Enum.Font.Gotham
-		ic.TextSize = 14
-		ic.Parent = btn
+	-- icon
+	local ic = Instance.new("TextLabel")
+	ic.Size = UDim2.new(0,22,1,0)
+	ic.Position = UDim2.new(0,8,0,0)
+	ic.BackgroundTransparency = 1
+	ic.Text = icon
+	ic.TextColor3 = MAIN
+	ic.Font = Enum.Font.Gotham
+	ic.TextSize = 14
+	ic.Parent = btn
 
-		local tx = Instance.new("TextLabel")
-		tx.Size = UDim2.new(1,-40,1,0)
-		tx.Position = UDim2.new(0,32,0,0)
-		tx.BackgroundTransparency = 1
-		tx.Text = names[key]
-		tx.TextColor3 = MAIN
-		tx.Font = Enum.Font.Gotham
-		tx.TextSize = 13
-		tx.TextXAlignment = Enum.TextXAlignment.Left
-		tx.Parent = btn
-	end
+	-- text (ONLY ONE SOURCE = FIXED MAIN DUPLICATION)
+	local tx = Instance.new("TextLabel")
+	tx.Size = UDim2.new(1,-40,1,0)
+	tx.Position = UDim2.new(0,35,0,0)
+	tx.BackgroundTransparency = 1
+	tx.Text = key
+	tx.TextColor3 = MAIN
+	tx.Font = Enum.Font.Gotham
+	tx.TextSize = 13
+	tx.TextXAlignment = Enum.TextXAlignment.Left
+	tx.Parent = btn
 
 	btn.MouseButton1Click:Connect(function()
 		switch(key)
@@ -260,7 +245,7 @@ for _,v in ipairs(tabs) do
 end
 
 ------------------------------------------------
---// MINI FIX
+--// MINI TOGGLE FIX
 ------------------------------------------------
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
