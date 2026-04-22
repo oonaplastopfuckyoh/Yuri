@@ -2,7 +2,6 @@
 --// SERVICES
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 
@@ -30,17 +29,17 @@ end
 --// COLORS
 ------------------------------------------------
 local MAIN = Color3.fromRGB(170,90,255)
-local DARK = Color3.fromRGB(10,10,15)
-local DARK2 = Color3.fromRGB(5,5,8)
+local BG = Color3.fromRGB(15,15,20)
+local SIDEBAR_BG = Color3.fromRGB(20,20,28)
 local TEXT = Color3.fromRGB(210,170,255)
 
 ------------------------------------------------
 --// MAIN FRAME
 ------------------------------------------------
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,420,0,280)
-frame.Position = UDim2.new(0.5,-210,0.5,-140)
-frame.BackgroundColor3 = DARK2
+frame.Size = UDim2.new(0,430,0,290)
+frame.Position = UDim2.new(0.5,-215,0.5,-145)
+frame.BackgroundColor3 = BG
 frame.BorderSizePixel = 0
 frame.Parent = gui
 Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
@@ -50,7 +49,7 @@ Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
 ------------------------------------------------
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1,0,0.18,0)
-topBar.BackgroundColor3 = DARK
+topBar.BackgroundColor3 = Color3.fromRGB(10,10,14)
 topBar.Parent = frame
 Instance.new("UICorner",topBar).CornerRadius = UDim.new(0,12)
 
@@ -64,10 +63,8 @@ title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// CLOSE + MINI SYSTEM
+--// CLOSE + MINI
 ------------------------------------------------
-local isOpen = true
-
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,24,0,24)
 closeBtn.Position = UDim2.new(1,-30,0.5,-12)
@@ -92,13 +89,11 @@ mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 closeBtn.MouseButton1Click:Connect(function()
-	isOpen = false
 	frame.Visible = false
 	mini.Visible = true
 end)
 
 mini.MouseButton1Click:Connect(function()
-	isOpen = true
 	frame.Visible = true
 	mini.Visible = false
 end)
@@ -113,12 +108,14 @@ body.BackgroundTransparency = 1
 body.Parent = frame
 
 ------------------------------------------------
---// SIDEBAR (FIXED)
+--// SIDEBAR (RESTORED DESIGN)
 ------------------------------------------------
 local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0,120,1,0)
-sidebar.BackgroundColor3 = DARK
+sidebar.Size = UDim2.new(0,125,1,0)
+sidebar.BackgroundColor3 = SIDEBAR_BG
+sidebar.BorderSizePixel = 0
 sidebar.Parent = body
+Instance.new("UICorner",sidebar).CornerRadius = UDim.new(0,10)
 
 local list = Instance.new("UIListLayout")
 list.Padding = UDim.new(0,6)
@@ -133,8 +130,8 @@ pad.Parent = sidebar
 --// PAGE AREA
 ------------------------------------------------
 local pageHolder = Instance.new("Frame")
-pageHolder.Size = UDim2.new(1,-120,1,0)
-pageHolder.Position = UDim2.new(0,120,0,0)
+pageHolder.Size = UDim2.new(1,-125,1,0)
+pageHolder.Position = UDim2.new(0,125,0,0)
 pageHolder.BackgroundTransparency = 1
 pageHolder.Parent = body
 
@@ -166,30 +163,21 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// ACTIVE TAB GLOW
+--// ACTIVE TAB
 ------------------------------------------------
 local active
 
 local function setActive(btn)
 	if active then
-		active.BackgroundColor3 = Color3.fromRGB(20,20,25)
-		local g = active:FindFirstChild("Glow")
-		if g then g:Destroy() end
+		active.BackgroundColor3 = Color3.fromRGB(18,18,22)
 	end
 
 	active = btn
-	btn.BackgroundColor3 = Color3.fromRGB(35,15,60)
-
-	local glow = Instance.new("UIStroke")
-	glow.Name = "Glow"
-	glow.Color = MAIN
-	glow.Thickness = 2
-	glow.Transparency = 0.2
-	glow.Parent = btn
+	btn.BackgroundColor3 = Color3.fromRGB(40,20,70)
 end
 
 ------------------------------------------------
---// SIDEBAR BUTTONS
+--// SIDEBAR BUTTONS (ALL SYMBOLS PURPLE)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -203,10 +191,10 @@ local tabs = {
 for _,v in ipairs(tabs) do
 	local b = Instance.new("TextButton")
 	b.Size = UDim2.new(1,-10,0,28)
-	b.BackgroundColor3 = Color3.fromRGB(20,20,25)
+	b.BackgroundColor3 = Color3.fromRGB(18,18,22)
 	b.Text = "   "..v[1]
 	b.TextXAlignment = Enum.TextXAlignment.Left
-	b.TextColor3 = TEXT
+	b.TextColor3 = MAIN -- ALL TEXT/SYMBOLS PURPLE
 	b.Font = Enum.Font.Gotham
 	b.TextSize = 12
 	b.Parent = sidebar
@@ -219,14 +207,13 @@ for _,v in ipairs(tabs) do
 end
 
 ------------------------------------------------
---// UI SCALE CONTROL (CONFIG)
+--// UI SCALE CONTROL
 ------------------------------------------------
 local label = Instance.new("TextLabel")
-label.Size = UDim2.new(1,0,0,30)
+label.Size = UDim2.new(1,0,0,25)
 label.Text = "UI Scale: 100%"
 label.TextColor3 = TEXT
 label.BackgroundTransparency = 1
-label.Font = Enum.Font.Gotham
 label.Parent = Config
 
 local minus = Instance.new("TextButton")
@@ -257,32 +244,3 @@ plus.MouseButton1Click:Connect(function()
 end)
 
 refresh()
-
-------------------------------------------------
---// DRAG SYSTEM
-------------------------------------------------
-do
-	local dragging = false
-	local start, pos
-
-	topBar.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			start = i.Position
-			pos = frame.Position
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(i)
-		if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-			local d = i.Position - start
-			frame.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
-		end
-	end)
-
-	UserInputService.InputEnded:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
-end
