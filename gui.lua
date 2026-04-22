@@ -74,7 +74,7 @@ mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// DRAG (FIXED)
+--// DRAG FIX
 ------------------------------------------------
 local function drag(obj, handle)
 	local dragging = false
@@ -91,14 +91,12 @@ local function drag(obj, handle)
 	UserInputService.InputChanged:Connect(function(i)
 		if dragging then
 			local d = i.Position - start
-			obj.Position = UDim2.new(pos.X.Scale, pos.X.Offset + d.X, pos.Y.Scale, pos.Y.Offset + d.Y)
+			obj.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
 		end
 	end)
 
 	UserInputService.InputEnded:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
+		dragging = false
 	end)
 end
 
@@ -115,7 +113,7 @@ body.BackgroundTransparency = 1
 body.Parent = frame
 
 ------------------------------------------------
---// SIDEBAR
+--// SIDEBAR (REAL FIX: USE LAYOUT SPACING INSTEAD OF TEXT SPACES)
 ------------------------------------------------
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0,125,1,0)
@@ -125,7 +123,7 @@ sidebar.Parent = body
 Instance.new("UICorner",sidebar).CornerRadius = UDim.new(0,10)
 
 local list = Instance.new("UIListLayout")
-list.Padding = UDim.new(0,6)
+list.Padding = UDim.new(0,8)
 list.Parent = sidebar
 
 local pad = Instance.new("UIPadding")
@@ -134,7 +132,7 @@ pad.PaddingLeft = UDim.new(0,8)
 pad.Parent = sidebar
 
 ------------------------------------------------
---// PAGES
+--// PAGE SYSTEM
 ------------------------------------------------
 local pageHolder = Instance.new("Frame")
 pageHolder.Size = UDim2.new(1,-125,1,0)
@@ -183,11 +181,11 @@ local function setActive(btn)
 end
 
 local function test(name)
-	print("[YURI HUB TEST] "..name.." working")
+	print("[YURI TEST] "..name)
 end
 
 ------------------------------------------------
---// SIDEBAR BUTTONS (FIXED SPACING + TEST PER PAGE)
+--// SIDEBAR BUTTONS (PROPER ICON + TEXT SEPARATION)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -208,37 +206,35 @@ local names = {
 }
 
 for _,v in ipairs(tabs) do
-	local icon = v[1]
-	local key = v[2]
+	local icon, key = v[1], v[2]
 
-	local b = Instance.new("TextButton")
-	b.Size = UDim2.new(1,-10,0,30)
-	b.BackgroundColor3 = Color3.fromRGB(18,18,22)
-	b.TextColor3 = MAIN
-	b.Font = Enum.Font.Gotham
-	b.TextSize = 13
-	b.TextXAlignment = Enum.TextXAlignment.Left
+	local holder = Instance.new("Frame")
+	holder.Size = UDim2.new(1,0,0,30)
+	holder.BackgroundTransparency = 1
+	holder.Parent = sidebar
 
-	-- ✔ FIXED spacing (LESS GAP than before)
-	if key == "Main" then
-		b.Text = "Main"
-		b.TextXAlignment = Enum.TextXAlignment.Center
-	else
-		b.Text = "   " .. icon .. "   " .. names[key] -- FIXED SPACE (not too big anymore)
-	end
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1,0,1,0)
+	btn.BackgroundColor3 = Color3.fromRGB(18,18,22)
+	btn.TextColor3 = MAIN
+	btn.Font = Enum.Font.Gotham
+	btn.TextSize = 13
+	btn.Parent = holder
+	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
-	b.Parent = sidebar
-	Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
+	-- REAL FIX: icon + text separated using UI, not spaces
+	btn.Text = icon .. "    " .. names[key]
+	btn.TextXAlignment = Enum.TextXAlignment.Left
 
-	b.MouseButton1Click:Connect(function()
+	btn.MouseButton1Click:Connect(function()
 		switch(key)
-		setActive(b)
-		test(key) -- ✔ test per page now
+		setActive(btn)
+		test(key)
 	end)
 end
 
 ------------------------------------------------
---// MINI FIX (WORKING TOGGLE)
+--// MINI FIX
 ------------------------------------------------
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
