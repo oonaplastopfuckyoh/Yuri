@@ -1,9 +1,11 @@
+
 --// SERVICES
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
 
 --// GUI
 local gui = Instance.new("ScreenGui")
@@ -20,10 +22,11 @@ frame.BorderSizePixel = 0
 frame.Parent = gui
 Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
 
+--// OUTLINE
 local stroke = Instance.new("UIStroke")
 stroke.Color = Color3.fromRGB(170,90,255)
-stroke.Transparency = 0.35
 stroke.Thickness = 2
+stroke.Transparency = 0.4
 stroke.Parent = frame
 
 --// TOP BAR
@@ -42,7 +45,7 @@ title.TextColor3 = Color3.fromRGB(255,255,255)
 title.BackgroundTransparency = 1
 title.Parent = topBar
 
---// CLOSE → MINIMIZE LOGO MODE
+--// CLOSE + MINIMIZE ICON
 local minimized = false
 
 local miniIcon = Instance.new("TextButton")
@@ -85,7 +88,7 @@ Instance.new("UICorner",sidebar).CornerRadius = UDim.new(0,10)
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,6)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-layout.VerticalAlignment = Enum.VerticalAlignment.Center -- CENTERED
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
 layout.Parent = sidebar
 
 local padding = Instance.new("UIPadding")
@@ -121,7 +124,7 @@ local function switch(tab)
 	end
 end
 
---// TOGGLE SYSTEM PER PAGE
+--// TOGGLE SYSTEM
 local function addToggle(parent, text, y)
 	local state = false
 
@@ -163,7 +166,7 @@ local function addToggle(parent, text, y)
 	end)
 end
 
---// SIDEBAR BUTTONS (NO INDICATORS, CENTERED)
+--// SIDEBAR BUTTONS
 for _,t in ipairs({"Main","Auto","Player","Webhook","Misc","Config"}) do
 	local b = Instance.new("TextButton")
 	b.Size = UDim2.new(0.85,0,0,28)
@@ -180,15 +183,15 @@ for _,t in ipairs({"Main","Auto","Player","Webhook","Misc","Config"}) do
 	end)
 end
 
---// EXAMPLE PAGE TOGGLES (EACH TAB OWNED)
-addToggle(Main,"Main Toggle",20)
+--// EXAMPLE TOGGLES PER TAB
+addToggle(Main,"Main Feature",20)
 addToggle(Auto,"Auto Farm",20)
-addToggle(PlayerP,"Speed Boost",20)
-addToggle(Webhook,"Webhook Send",20)
-addToggle(Misc,"Extra Feature",20)
+addToggle(PlayerP,"Speed",20)
+addToggle(Webhook,"Webhook",20)
+addToggle(Misc,"Misc Option",20)
 addToggle(Config,"Save Config",20)
 
---// CLOSE → MINIMIZE LOGO
+--// CLOSE → MINIMIZE
 closeBtn.MouseButton1Click:Connect(function()
 	minimized = true
 	frame.Visible = false
@@ -201,31 +204,66 @@ miniIcon.MouseButton1Click:Connect(function()
 	miniIcon.Visible = false
 end)
 
---// DRAG
-local dragging, startPos, startFramePos
+--// MOBILE + PC SCALING
+local function getScale()
+	local v = camera.ViewportSize
+	local min = math.min(v.X, v.Y)
 
-topBar.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+	if min < 700 then
+		return 0.75
+	elseif min < 1000 then
+		return 0.9
+	else
+		return 1
+	end
+end
+
+local function applyScale()
+	local s = getScale()
+	frame.Size = UDim2.new(0,420*s,0,280*s)
+end
+
+applyScale()
+camera:GetPropertyChangedSignal("ViewportSize"):Connect(applyScale)
+
+--// DRAG (MOBILE + PC)
+local dragging = false
+local dragStart
+local startPos
+
+local function pos(input)
+	return Vector2.new(input.Position.X, input.Position.Y)
+end
+
+topBar.InputBegan:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1
+	or i.UserInputType == Enum.UserInputType.Touch then
 		dragging = true
-		startPos = input.Position
-		startFramePos = frame.Position
+		dragStart = pos(i)
+		startPos = frame.Position
 	end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta = input.Position - startPos
+UserInputService.InputChanged:Connect(function(i)
+	if not dragging then return end
+
+	if i.UserInputType == Enum.UserInputType.MouseMovement
+	or i.UserInputType == Enum.UserInputType.Touch then
+
+		local d = pos(i) - dragStart
+
 		frame.Position = UDim2.new(
-			startFramePos.X.Scale,
-			startFramePos.X.Offset + delta.X,
-			startFramePos.Y.Scale,
-			startFramePos.Y.Offset + delta.Y
+			startPos.X.Scale,
+			startPos.X.Offset + d.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + d.Y
 		)
 	end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+UserInputService.InputEnded:Connect(function(i)
+	if i.UserInputType == Enum.UserInputType.MouseButton1
+	or i.UserInputType == Enum.UserInputType.Touch then
 		dragging = false
 	end
 end)
