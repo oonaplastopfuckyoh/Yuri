@@ -113,11 +113,26 @@ local function createLog(displayName, data)
 	}
 end
 
---// ADD LOG (EXACT CATEGORIZATION)
+--// SORT FUNCTION (highest count on top)
+local function sortLogs()
+	local sorted = {}
+
+	for _, entry in pairs(logs) do
+		table.insert(sorted, entry)
+	end
+
+	table.sort(sorted, function(a, b)
+		return a.count > b.count
+	end)
+
+	for i, entry in ipairs(sorted) do
+		entry.ui.frame.LayoutOrder = i
+	end
+end
+
+--// ADD LOG (EXACT + SORT)
 local function addLog(remoteName, dataTable)
 	local data = HttpService:JSONEncode(dataTable)
-
-	-- unique key = remote + exact data
 	local key = remoteName .. "|" .. data
 
 	if logs[key] then
@@ -133,6 +148,8 @@ local function addLog(remoteName, dataTable)
 			ui = ui
 		}
 	end
+
+	sortLogs()
 
 	task.wait()
 	scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y)
