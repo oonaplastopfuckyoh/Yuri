@@ -33,11 +33,11 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 --// HELPERS
-local function createFrame(parent, size, pos, color, radius)
+local function createFrame(parent, size, pos, bg, radius)
 	local f = Instance.new("Frame")
 	f.Size = size
 	f.Position = pos
-	f.BackgroundColor3 = color
+	f.BackgroundColor3 = bg
 	f.BorderSizePixel = 0
 	f.Parent = parent
 	if radius then
@@ -102,7 +102,7 @@ mini.Image = "rbxassetid://129240920074049"
 local body = createFrame(frame, UDim2.new(1,0,0.82,0), UDim2.new(0,0,0.18,0), CONFIG.COLORS.BG, 0)
 
 --// SIDEBAR
-local sidebar = createFrame(body, UDim2.new(0, CONFIG.SIZES.SIDEBAR_WIDTH, 1, 0), UDim2.new(0,0,0,0), CONFIG.COLORS.SIDEBAR_BG, 10)
+local sidebar = createFrame(body, UDim2.new(0,CONFIG.SIZES.SIDEBAR_WIDTH,1,0), UDim2.new(0,0,0,0), CONFIG.COLORS.SIDEBAR_BG, 10)
 
 local pageHolder = createFrame(body, UDim2.new(1,-CONFIG.SIZES.SIDEBAR_WIDTH,1,0), UDim2.new(0,CONFIG.SIZES.SIDEBAR_WIDTH,0,0), CONFIG.COLORS.BG, 0)
 pageHolder.BackgroundTransparency = 1
@@ -126,14 +126,13 @@ local Config = newPage("Config")
 
 main.Visible = true
 
---// TAB SWITCH
 local function switch(tab)
 	for n,p in pairs(pages) do
 		p.Visible = (n == tab)
 	end
 end
 
---// TELEPORT SYSTEM
+--// TELEPORT SYSTEM (AUTO FEATURE ADDED)
 local function teleport(pos)
 	local char = player.Character or player.CharacterAdded:Wait()
 	local hrp = char:WaitForChild("HumanoidRootPart")
@@ -163,7 +162,7 @@ local running = false
 local paused = false
 local loopMode = false
 
---// AUTO LOOP
+--// AUTO LOOP (0.1s TP INTERVAL)
 local function runWorld(world)
 	running = true
 	paused = false
@@ -171,25 +170,34 @@ local function runWorld(world)
 	while running do
 		for i=1,#world do
 			if not running then return end
+
 			while paused do task.wait(0.1) end
+
 			teleport(world[i].Pos)
 			task.wait(0.1)
 		end
+
 		if not loopMode then running = false end
 	end
 end
 
---// AUTO UI
-local function makeBtn(txt,y,func)
-	local b = createButton(Auto,UDim2.new(0,200,0,35),UDim2.new(0,10,0,y),
-	txt,CONFIG.COLORS.BTN_INACTIVE,CONFIG.COLORS.MAIN,6)
+--// AUTO BUTTONS
+local function makeBtn(text,y,func)
+	local b = createButton(Auto,
+		UDim2.new(0,200,0,35),
+		UDim2.new(0,10,0,y),
+		text,
+		CONFIG.COLORS.BTN_INACTIVE,
+		CONFIG.COLORS.MAIN,
+		6
+	)
 	b.MouseButton1Click:Connect(func)
 end
 
 makeBtn("World 1 TP",10,function() runWorld(World1) end)
 makeBtn("World 2 TP",55,function() runWorld(World2) end)
 
-makeBtn("Pause/Resume",100,function()
+makeBtn("Pause / Resume",100,function()
 	paused = not paused
 end)
 
@@ -198,26 +206,29 @@ makeBtn("Stop",145,function()
 	paused = false
 end)
 
-makeBtn("Loop Toggle",190,function()
+makeBtn("Loop Mode",190,function()
 	loopMode = not loopMode
 end)
 
---// TABS (simplified)
-local tabList = {
-	{"Home","main"},
-	{"Auto","Auto"},
-	{"Player","Player"},
-	{"Webhook","Webhook"},
-	{"Misc","Misc"},
-	{"Config","Config"}
+--// SIDEBAR TABS
+local tabs = {
+	{"🏠","main","Home"},
+	{"⚡","Auto","Auto"},
+	{"👤","Player","Player"},
+	{"🌐","Webhook","Webhook"},
+	{"•••","Misc","Misc"},
+	{"⚙️","Config","Config"}
 }
 
-for i,v in ipairs(tabList) do
+for _,t in ipairs(tabs) do
 	local btn = createButton(sidebar,UDim2.new(1,-10,0,30),UDim2.new(0,0,0,0),
-	v[1],CONFIG.COLORS.BTN_INACTIVE,CONFIG.COLORS.MAIN,8)
+	"",CONFIG.COLORS.BTN_INACTIVE,CONFIG.COLORS.MAIN,8)
+
+	createLabel(btn,t[1],UDim2.new(0,22,1,0),UDim2.new(0,8,0,0),Enum.Font.Gotham,14,CONFIG.COLORS.MAIN)
+	createLabel(btn,t[3],UDim2.new(1,-40,1,0),UDim2.new(0,35,0,0),Enum.Font.Gotham,14,CONFIG.COLORS.MAIN)
 
 	btn.MouseButton1Click:Connect(function()
-		switch(v[2])
+		switch(t[2])
 	end)
 end
 
