@@ -2,7 +2,6 @@
 --// SERVICES
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -26,6 +25,12 @@ end
 applyScale()
 
 ------------------------------------------------
+--// COLORS
+------------------------------------------------
+local FRAME_PURPLE = Color3.fromRGB(170,90,255)
+local TEXT_PURPLE = Color3.fromRGB(210,170,255)
+
+------------------------------------------------
 --// MAIN FRAME
 ------------------------------------------------
 local frame = Instance.new("Frame")
@@ -36,14 +41,14 @@ frame.BorderSizePixel = 0
 frame.Parent = gui
 Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
 
-local outline = Instance.new("UIStroke")
-outline.Color = Color3.fromRGB(170,90,255)
-outline.Transparency = 0.35
-outline.Thickness = 2
-outline.Parent = frame
+local stroke = Instance.new("UIStroke")
+stroke.Color = FRAME_PURPLE
+stroke.Transparency = 0.4
+stroke.Thickness = 2
+stroke.Parent = frame
 
 ------------------------------------------------
---// TOP BAR (BLACK + OUTLINE)
+--// TOP BAR
 ------------------------------------------------
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1,0,0.18,0)
@@ -51,34 +56,61 @@ topBar.BackgroundColor3 = Color3.fromRGB(0,0,0)
 topBar.Parent = frame
 Instance.new("UICorner",topBar).CornerRadius = UDim.new(0,12)
 
-local topOutline = Instance.new("UIStroke")
-topOutline.Color = Color3.fromRGB(60,60,60)
-topOutline.Transparency = 0.4
-topOutline.Parent = topBar
+local topStroke = Instance.new("UIStroke")
+topStroke.Color = FRAME_PURPLE
+topStroke.Transparency = 0.8
+topStroke.Thickness = 1
+topStroke.Parent = topBar
 
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,0,1,0)
 title.Text = "Hub ni Yuri"
-title.Font = Enum.Font.Arcade -- cooler font
+title.Font = Enum.Font.Arcade
 title.TextSize = 22
-title.TextColor3 = Color3.fromRGB(200,140,255)
+title.TextColor3 = FRAME_PURPLE
 title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// MINIMIZED ICON
+--// MINIMIZED ICON (DRAGGABLE)
 ------------------------------------------------
 local miniIcon = Instance.new("TextButton")
 miniIcon.Size = UDim2.new(0,40,0,40)
 miniIcon.Position = UDim2.new(0,20,0.5,-20)
 miniIcon.Text = "Y"
-miniIcon.BackgroundColor3 = Color3.fromRGB(170,90,255)
+miniIcon.BackgroundColor3 = FRAME_PURPLE
 miniIcon.TextColor3 = Color3.fromRGB(255,255,255)
 miniIcon.Font = Enum.Font.GothamBold
 miniIcon.TextSize = 18
 miniIcon.Visible = false
 miniIcon.Parent = gui
 Instance.new("UICorner",miniIcon).CornerRadius = UDim.new(1,0)
+
+do
+	local dragging=false
+	local start,pos
+
+	miniIcon.InputBegan:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+			dragging=true
+			start=i.Position
+			pos=miniIcon.Position
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(i)
+		if dragging and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
+			local d=i.Position-start
+			miniIcon.Position=UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(i)
+		if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+			dragging=false
+		end
+	end)
+end
 
 ------------------------------------------------
 --// CLOSE BUTTON
@@ -94,6 +126,16 @@ closeBtn.TextSize = 14
 closeBtn.Parent = topBar
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
 
+closeBtn.MouseButton1Click:Connect(function()
+	frame.Visible=false
+	miniIcon.Visible=true
+end)
+
+miniIcon.MouseButton1Click:Connect(function()
+	frame.Visible=true
+	miniIcon.Visible=false
+end)
+
 ------------------------------------------------
 --// BODY
 ------------------------------------------------
@@ -103,32 +145,31 @@ body.Position = UDim2.new(0,0,0.18,0)
 body.BackgroundColor3 = Color3.fromRGB(5,5,5)
 body.Parent = frame
 
-local bodyOutline = Instance.new("UIStroke")
-bodyOutline.Color = Color3.fromRGB(50,50,50)
-bodyOutline.Transparency = 0.4
-bodyOutline.Parent = body
-
 ------------------------------------------------
---// SIDEBAR
+--// SIDEBAR (PURPLE GRADIENT + LEFT ALIGN)
 ------------------------------------------------
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0.22,0,1,0)
 sidebar.BackgroundColor3 = Color3.fromRGB(10,10,10)
 sidebar.Parent = body
 
-local sideStroke = Instance.new("UIStroke")
-sideStroke.Color = Color3.fromRGB(80,80,80)
-sideStroke.Transparency = 0.5
-sideStroke.Parent = sidebar
+local grad = Instance.new("UIGradient")
+grad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(20,10,35)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(45,20,70))
+})
+grad.Rotation = 90
+grad.Parent = sidebar
 
 local list = Instance.new("UIListLayout")
 list.Padding = UDim.new(0,6)
-list.HorizontalAlignment = Enum.HorizontalAlignment.Center
+list.HorizontalAlignment = Enum.HorizontalAlignment.Left
 list.VerticalAlignment = Enum.VerticalAlignment.Center
 list.Parent = sidebar
 
 local pad = Instance.new("UIPadding")
 pad.PaddingTop = UDim.new(0,10)
+pad.PaddingLeft = UDim.new(0,6)
 pad.Parent = sidebar
 
 ------------------------------------------------
@@ -163,11 +204,43 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// TOGGLES
+--// SIDEBAR BUTTONS (ICONS + LEFT ALIGN)
+------------------------------------------------
+local items = {
+	{"Main","Main"},
+	{"⚡ Auto","Auto"},
+	{"👤 Player","Player"},
+	{"🌐 Webhook","Webhook"},
+	{"••• Misc","Misc"},
+	{"⚙️ Config","Config"}
+}
+
+for _,v in ipairs(items) do
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(0.95,0,0,28)
+	b.BackgroundColor3 = Color3.fromRGB(20,10,30)
+	b.Text = "   " .. v[1]
+	b.TextXAlignment = Enum.TextXAlignment.Left
+	b.TextColor3 = TEXT_PURPLE
+	b.Font = Enum.Font.Gotham
+	b.TextSize = 12
+	b.Parent = sidebar
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
+
+	if v[2] == "Main" then
+		b.TextColor3 = FRAME_PURPLE
+		b.BackgroundColor3 = Color3.fromRGB(35,15,60)
+	end
+
+	b.MouseButton1Click:Connect(function()
+		switch(v[2])
+	end)
+end
+
+------------------------------------------------
+--// SIMPLE TOGGLES
 ------------------------------------------------
 local function addToggle(parent,text,y)
-	local state=false
-
 	local f=Instance.new("Frame")
 	f.Size=UDim2.new(0.9,0,0,30)
 	f.Position=UDim2.new(0.05,0,0,y)
@@ -193,11 +266,12 @@ local function addToggle(parent,text,y)
 	b.Parent=f
 	Instance.new("UICorner",b).CornerRadius=UDim.new(1,0)
 
+	local state=false
 	b.MouseButton1Click:Connect(function()
 		state=not state
 		if state then
 			b.Text="ON"
-			b.BackgroundColor3=Color3.fromRGB(170,90,255)
+			b.BackgroundColor3=FRAME_PURPLE
 		else
 			b.Text="OFF"
 			b.BackgroundColor3=Color3.fromRGB(120,120,120)
@@ -205,37 +279,6 @@ local function addToggle(parent,text,y)
 	end)
 end
 
-------------------------------------------------
---// SIDEBAR BUTTONS (ICONS ADDED)
-------------------------------------------------
-local items = {
-	{"Main","Main"},
-	{"⚡ Auto","Auto"},
-	{"👤 Player","Player"},
-	{"🌐 Webhook","Webhook"},
-	{"••• Misc","Misc"},
-	{"⚙️ Config","Config"}
-}
-
-for _,v in ipairs(items) do
-	local b=Instance.new("TextButton")
-	b.Size=UDim2.new(0.9,0,0,28)
-	b.BackgroundColor3=Color3.fromRGB(20,20,20)
-	b.Text=v[1]
-	b.TextColor3=(v[2]=="Main") and Color3.fromRGB(200,140,255) or Color3.fromRGB(255,255,255)
-	b.Font=Enum.Font.Gotham
-	b.TextSize=12
-	b.Parent=sidebar
-	Instance.new("UICorner",b).CornerRadius=UDim.new(0,8)
-
-	b.MouseButton1Click:Connect(function()
-		switch(v[2])
-	end)
-end
-
-------------------------------------------------
---// SAMPLE TOGGLES
-------------------------------------------------
 addToggle(Main,"Main Feature",20)
 addToggle(Auto,"Auto Farm",20)
 addToggle(PlayerP,"Speed",20)
@@ -250,7 +293,7 @@ local label = Instance.new("TextLabel")
 label.Size=UDim2.new(0.9,0,0,20)
 label.Position=UDim2.new(0.05,0,0,20)
 label.Text="UI Scale: 100%"
-label.TextColor3=Color3.fromRGB(255,255,255)
+label.TextColor3=TEXT_PURPLE
 label.BackgroundTransparency=1
 label.Font=Enum.Font.Gotham
 label.Parent=Config
@@ -285,7 +328,7 @@ end)
 update()
 
 ------------------------------------------------
---// DRAG SYSTEM
+--// DRAG UI
 ------------------------------------------------
 do
 	local dragging=false
