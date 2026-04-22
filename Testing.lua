@@ -1,231 +1,222 @@
-
 --// SERVICES
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-
 local player = Players.LocalPlayer
 
-------------------------------------------------
--- CLEAN GUI
-------------------------------------------------
-local old = player.PlayerGui:FindFirstChild("YuriHub")
+--// CONFIG - All magic numbers in one place
+local CONFIG = {
+	COLORS = {
+		MAIN = Color3.fromRGB(170, 90, 255),
+		BG = Color3.fromRGB(15, 15, 20),
+		SIDEBAR_BG = Color3.fromRGB(12, 12, 16),
+		DARK = Color3.fromRGB(10, 10, 14),
+		BTN_INACTIVE = Color3.fromRGB(18, 18, 22),
+		BTN_ACTIVE = Color3.fromRGB(60, 30, 110),
+		CLOSE_BTN = Color3.fromRGB(255, 70, 120),
+	},
+	SIZES = {
+		FRAME_WIDTH = 430,
+		FRAME_HEIGHT = 290,
+		SIDEBAR_WIDTH = 125,
+		CORNER_RADIUS = 12,
+	}
+}
+
+--// PREVENT DUPLICATE GUI
+local old = player:WaitForChild("PlayerGui"):FindFirstChild("YuriHub")
 if old then old:Destroy() end
 
+--// CREATE GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "YuriHub"
 gui.ResetOnSpawn = false
-gui.Parent = player.PlayerGui
+gui.Parent = player:WaitForChild("PlayerGui")
 
-------------------------------------------------
--- COLORS
-------------------------------------------------
-local BG = Color3.fromRGB(10,10,14)
-local SIDEBAR = Color3.fromRGB(12,12,18)
-local MAIN = Color3.fromRGB(170,90,255)
-local TEXT = Color3.fromRGB(210,180,255)
+--// UTILITY FUNCTIONS
+local function createFrame(parent, size, pos, bgColor, cornerRadius)
+	local frame = Instance.new("Frame")
+	frame.Size = size
+	frame.Position = pos
+	frame.BackgroundColor3 = bgColor
+	frame.BorderSizePixel = 0
+	frame.Parent = parent
+	if cornerRadius then
+		Instance.new("UICorner", frame).CornerRadius = UDim.new(0, cornerRadius)
+	end
+	return frame
+end
 
-------------------------------------------------
--- MAIN FRAME
-------------------------------------------------
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 520, 0, 320)
-frame.Position = UDim2.new(0.5, -260, 0.5, -160)
-frame.BackgroundColor3 = BG
-frame.BorderSizePixel = 0
-frame.Parent = gui
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 14)
+local function createLabel(parent, text, size, pos, font, textSize, color, bgTransparency)
+	local label = Instance.new("TextLabel")
+	label.Size = size
+	label.Position = pos
+	label.Text = text
+	label.Font = font
+	label.TextSize = textSize
+	label.TextColor3 = color
+	label.BackgroundTransparency = bgTransparency or 1
+	label.Parent = parent
+	return label
+end
 
-------------------------------------------------
--- TOP BAR
-------------------------------------------------
-local topBar = Instance.new("Frame")
-topBar.Size = UDim2.new(1,0,0,45)
-topBar.BackgroundColor3 = Color3.fromRGB(8,8,12)
-topBar.BorderSizePixel = 0
-topBar.Parent = frame
-Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 14)
+local function createButton(parent, size, pos, text, bgColor, textColor, cornerRadius)
+	local btn = Instance.new("TextButton")
+	btn.Size = size
+	btn.Position = pos
+	btn.Text = text
+	btn.BackgroundColor3 = bgColor
+	btn.TextColor3 = textColor
+	btn.BorderSizePixel = 0
+	btn.Parent = parent
+	if cornerRadius then
+		Instance.new("UICorner", btn).CornerRadius = UDim.new(0, cornerRadius)
+	end
+	return btn
+end
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,1,0)
-title.Text = "Hub ni Yuri"
-title.Font = Enum.Font.Arcade
-title.TextSize = 24
-title.TextColor3 = MAIN
-title.BackgroundTransparency = 1
-title.Parent = topBar
+--// MAIN FRAME
+local frame = createFrame(gui, UDim2.new(0, CONFIG.SIZES.FRAME_WIDTH, 0, CONFIG.SIZES.FRAME_HEIGHT), UDim2.new(0.5, -215, 0.5, -145), CONFIG.COLORS.BG, CONFIG.SIZES.CORNER_RADIUS)
 
-------------------------------------------------
--- CLOSE
-------------------------------------------------
-local close = Instance.new("TextButton")
-close.Size = UDim2.new(0,28,0,28)
-close.Position = UDim2.new(1,-38,0.5,-14)
-close.Text = "×"
-close.Font = Enum.Font.GothamBold
-close.TextSize = 18
-close.TextColor3 = Color3.fromRGB(255,255,255)
-close.BackgroundColor3 = Color3.fromRGB(255,80,120)
-close.Parent = topBar
-Instance.new("UICorner", close).CornerRadius = UDim.new(1,0)
+--// TOP BAR
+local topBar = createFrame(frame, UDim2.new(1, 0, 0.18, 0), UDim2.new(0, 0, 0, 0), CONFIG.COLORS.DARK, CONFIG.SIZES.CORNER_RADIUS)
 
-------------------------------------------------
--- BODY
-------------------------------------------------
-local body = Instance.new("Frame")
-body.Size = UDim2.new(1,0,1,-45)
-body.Position = UDim2.new(0,0,0,45)
+createLabel(topBar, "Hub ni Yuri", UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), Enum.Font.Arcade, 22, CONFIG.COLORS.MAIN, 1)
+
+--// CLOSE BUTTON
+local closeBtn = createButton(topBar, UDim2.new(0, 24, 0, 24), UDim2.new(1, -40, 0.5, -12), "×", CONFIG.COLORS.CLOSE_BTN, Color3.fromRGB(255, 255, 255), 6)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 14
+
+--// MINI Y BUTTON
+local mini = createButton(gui, UDim2.new(0, 42, 0, 42), UDim2.new(0, 20, 0.5, -21), "Y", CONFIG.COLORS.MAIN, Color3.fromRGB(255, 255, 255), 6)
+mini.Font = Enum.Font.GothamBold
+mini.TextSize = 18
+mini.Visible = false
+mini.ZIndex = 9999
+
+--// IMPROVED DRAG FUNCTION (Single connection, no memory leak)
+local draggingObjects = {}
+
+local function createDragHandler(obj, handle)
+	handle.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+			draggingObjects[obj] = {dragging = true, start = i.Position, pos = obj.Position}
+		end
+	end)
+
+	handle.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+			if draggingObjects[obj] then
+				draggingObjects[obj].dragging = false
+			end
+		end
+	end)
+end
+
+UserInputService.InputChanged:Connect(function(i)
+	for obj, data in pairs(draggingObjects) do
+		if data.dragging then
+			local delta = i.Position - data.start
+			obj.Position = UDim2.new(data.pos.X.Scale, data.pos.X.Offset + delta.X, data.pos.Y.Scale, data.pos.Y.Offset + delta.Y)
+		end
+	end
+end)
+
+createDragHandler(frame, topBar)
+createDragHandler(mini, mini)
+
+--// BODY
+local body = createFrame(frame, UDim2.new(1, 0, 0.82, 0), UDim2.new(0, 0, 0.18, 0), CONFIG.COLORS.BG, 0)
 body.BackgroundTransparency = 1
-body.Parent = frame
 
-------------------------------------------------
--- SIDEBAR
-------------------------------------------------
-local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0,150,1,0)
-sidebar.BackgroundColor3 = SIDEBAR
-sidebar.BorderSizePixel = 0
-sidebar.Parent = body
-Instance.new("UICorner", sidebar).CornerRadius = UDim.new(0,12)
+--// SIDEBAR
+local sidebar = createFrame(body, UDim2.new(0, CONFIG.SIZES.SIDEBAR_WIDTH, 1, 0), UDim2.new(0, 0, 0, 0), CONFIG.COLORS.SIDEBAR_BG, 10)
 
 local list = Instance.new("UIListLayout")
-list.Padding = UDim.new(0,8)
+list.Padding = UDim.new(0, 6)
 list.Parent = sidebar
 
 local pad = Instance.new("UIPadding")
-pad.PaddingTop = UDim.new(0,12)
-pad.PaddingLeft = UDim.new(0,10)
+pad.PaddingTop = UDim.new(0, 10)
+pad.PaddingLeft = UDim.new(0, 8)
 pad.Parent = sidebar
 
-------------------------------------------------
--- CONTENT AREA
-------------------------------------------------
-local content = Instance.new("Frame")
-content.Size = UDim2.new(1,-150,1,0)
-content.Position = UDim2.new(0,150,0,0)
-content.BackgroundTransparency = 1
-content.Parent = body
+--// PAGE SYSTEM
+local pageHolder = createFrame(body, UDim2.new(1, -CONFIG.SIZES.SIDEBAR_WIDTH, 1, 0), UDim2.new(0, CONFIG.SIZES.SIDEBAR_WIDTH, 0, 0), CONFIG.COLORS.BG, 0)
+pageHolder.BackgroundTransparency = 1
 
-------------------------------------------------
--- PAGES
-------------------------------------------------
 local pages = {}
-
 local function newPage(name)
-	local p = Instance.new("Frame")
-	p.Size = UDim2.new(1,0,1,0)
+	local p = createFrame(pageHolder, UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), CONFIG.COLORS.BG, 0)
 	p.BackgroundTransparency = 1
 	p.Visible = false
-	p.Parent = content
 	pages[name] = p
 	return p
 end
 
 local main = newPage("main")
+local Auto = newPage("Auto")
+local PlayerP = newPage("Player")
+local Webhook = newPage("Webhook")
+local Misc = newPage("Misc")
+local Config = newPage("Config")
+
 main.Visible = true
 
-------------------------------------------------
--- SWITCH
-------------------------------------------------
 local function switch(tab)
-	for n,p in pairs(pages) do
+	for n, p in pairs(pages) do
 		p.Visible = (n == tab)
 	end
 end
 
-------------------------------------------------
--- ACTIVE BUTTON
-------------------------------------------------
-local active
-
+--// ACTIVE TAB TRACKING
+local activeBtn
 local function setActive(btn)
-	if active then
-		active.BackgroundColor3 = Color3.fromRGB(18,18,25)
+	if activeBtn then
+		activeBtn.BackgroundColor3 = CONFIG.COLORS.BTN_INACTIVE
 	end
-	active = btn
-	btn.BackgroundColor3 = MAIN
+	activeBtn = btn
+	btn.BackgroundColor3 = CONFIG.COLORS.BTN_ACTIVE
 end
 
-------------------------------------------------
--- SIDEBAR BUTTONS (MATCH MOCKUP STYLE)
-------------------------------------------------
+--// TABS
 local tabs = {
-	{"🏠","main"},
-	{"⚡","auto"},
-	{"👤","player"},
-	{"🌐","webhook"},
-	{"•••","misc"},
-	{"⚙️","config"}
+	{icon = "", name = "main", displayName = "Home"},
+	{icon = "⚡", name = "Auto", displayName = "Auto"},
+	{icon = "👤", name = "Player", displayName = "Player"},
+	{icon = "🌐", name = "Webhook", displayName = "Webhook"},
+	{icon = "•••", name = "Misc", displayName = "Misc"},
+	{icon = "⚙️", name = "Config", displayName = "Config"}
 }
 
-for _,v in ipairs(tabs) do
-	local icon, name = v[1], v[2]
-
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1,-12,0,38)
-	btn.BackgroundColor3 = Color3.fromRGB(18,18,25)
-	btn.Text = ""
-	btn.Parent = sidebar
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
-
-	local ic = Instance.new("TextLabel")
-	ic.Size = UDim2.new(0,30,1,0)
-	ic.Position = UDim2.new(0,10,0,0)
-	ic.BackgroundTransparency = 1
-	ic.Text = icon
-	ic.TextColor3 = MAIN
-	ic.Font = Enum.Font.Gotham
-	ic.TextSize = 16
-	ic.Parent = btn
-
-	local tx = Instance.new("TextLabel")
-	tx.Size = UDim2.new(1,-50,1,0)
-	tx.Position = UDim2.new(0,45,0,0)
-	tx.BackgroundTransparency = 1
-	tx.Text = name
-	tx.TextColor3 = TEXT
-	tx.Font = Enum.Font.Gotham
-	tx.TextSize = 14
-	tx.TextXAlignment = Enum.TextXAlignment.Left
-	tx.Parent = btn
+for _, tab in ipairs(tabs) do
+	local btn = createButton(sidebar, UDim2.new(1, -10, 0, 30), UDim2.new(0, 0, 0, 0), "", CONFIG.COLORS.BTN_INACTIVE, CONFIG.COLORS.MAIN, 8)
+	
+	createLabel(btn, tab.icon, UDim2.new(0, 22, 1, 0), UDim2.new(0, 8, 0, 0), Enum.Font.Gotham, 14, CONFIG.COLORS.MAIN, 1)
+	createLabel(btn, tab.displayName, UDim2.new(1, -40, 1, 0), UDim2.new(0, 35, 0, 0), Enum.Font.Gotham, 15, CONFIG.COLORS.MAIN, 1).TextXAlignment = Enum.TextXAlignment.Left
 
 	btn.MouseButton1Click:Connect(function()
-		switch(name)
+		switch(tab.name)
 		setActive(btn)
 	end)
 end
 
-------------------------------------------------
--- CLOSE
-------------------------------------------------
-close.MouseButton1Click:Connect(function()
+--// CLOSE / MINI TOGGLE
+closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
+	mini.Visible = true
 end)
 
-------------------------------------------------
--- DRAG
-------------------------------------------------
-local dragging, start, startPos
+mini.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	mini.Visible = false
+end)
 
-topBar.InputBegan:Connect(function(i)
-	if i.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		start = i.Position
-		startPos = frame.Position
+--// CLEANUP
+local connection
+connection = Players.PlayerRemoving:Connect(function(p)
+	if p == player then
+		gui:Destroy()
+		connection:Disconnect()
 	end
-end)
-
-UserInputService.InputChanged:Connect(function(i)
-	if dragging then
-		local d = i.Position - start
-		frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + d.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + d.Y
-		)
-	end
-end)
-
-UserInputService.InputEnded:Connect(function()
-	dragging = false
 end)
