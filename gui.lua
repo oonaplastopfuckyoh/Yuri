@@ -58,6 +58,9 @@ closeBtn.Size = UDim2.new(0,24,0,24)
 closeBtn.Position = UDim2.new(1,-40,0.5,-12)
 closeBtn.Text = "×"
 closeBtn.BackgroundColor3 = Color3.fromRGB(255,70,120)
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 14
 closeBtn.Parent = topBar
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
 
@@ -91,7 +94,12 @@ local function drag(obj, handle)
 	UserInputService.InputChanged:Connect(function(i)
 		if dragging then
 			local d = i.Position - start
-			obj.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
+			obj.Position = UDim2.new(
+				pos.X.Scale,
+				pos.X.Offset + d.X,
+				pos.Y.Scale,
+				pos.Y.Offset + d.Y
+			)
 		end
 	end)
 
@@ -113,7 +121,7 @@ body.BackgroundTransparency = 1
 body.Parent = frame
 
 ------------------------------------------------
---// SIDEBAR (REAL FIX: USE LAYOUT SPACING INSTEAD OF TEXT SPACES)
+--// SIDEBAR
 ------------------------------------------------
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0,125,1,0)
@@ -123,7 +131,7 @@ sidebar.Parent = body
 Instance.new("UICorner",sidebar).CornerRadius = UDim.new(0,10)
 
 local list = Instance.new("UIListLayout")
-list.Padding = UDim.new(0,8)
+list.Padding = UDim.new(0,6)
 list.Parent = sidebar
 
 local pad = Instance.new("UIPadding")
@@ -181,11 +189,11 @@ local function setActive(btn)
 end
 
 local function test(name)
-	print("[YURI TEST] "..name)
+	print("[YURI HUB TEST] "..name)
 end
 
 ------------------------------------------------
---// SIDEBAR BUTTONS (PROPER ICON + TEXT SEPARATION)
+--// SIDEBAR (REAL FIX: ICON + TEXT SEPARATE UI)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -208,23 +216,35 @@ local names = {
 for _,v in ipairs(tabs) do
 	local icon, key = v[1], v[2]
 
-	local holder = Instance.new("Frame")
-	holder.Size = UDim2.new(1,0,0,30)
-	holder.BackgroundTransparency = 1
-	holder.Parent = sidebar
-
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(1,0,1,0)
+	btn.Size = UDim2.new(1,-10,0,30)
 	btn.BackgroundColor3 = Color3.fromRGB(18,18,22)
-	btn.TextColor3 = MAIN
-	btn.Font = Enum.Font.Gotham
-	btn.TextSize = 13
-	btn.Parent = holder
+	btn.Text = ""
+	btn.Parent = sidebar
 	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
-	-- REAL FIX: icon + text separated using UI, not spaces
-	btn.Text = icon .. "    " .. names[key]
-	btn.TextXAlignment = Enum.TextXAlignment.Left
+	-- icon (real separation)
+	local ic = Instance.new("TextLabel")
+	ic.Size = UDim2.new(0,20,1,0)
+	ic.Position = UDim2.new(0,8,0,0)
+	ic.BackgroundTransparency = 1
+	ic.Text = icon
+	ic.TextColor3 = MAIN
+	ic.Font = Enum.Font.Gotham
+	ic.TextSize = 14
+	ic.Parent = btn
+
+	-- text (real separation)
+	local tx = Instance.new("TextLabel")
+	tx.Size = UDim2.new(1,-40,1,0)
+	tx.Position = UDim2.new(0,32,0,0)
+	tx.BackgroundTransparency = 1
+	tx.Text = names[key]
+	tx.TextColor3 = MAIN
+	tx.Font = Enum.Font.Gotham
+	tx.TextSize = 13
+	tx.TextXAlignment = Enum.TextXAlignment.Left
+	tx.Parent = btn
 
 	btn.MouseButton1Click:Connect(function()
 		switch(key)
