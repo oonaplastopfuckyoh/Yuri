@@ -99,7 +99,7 @@ mini.Parent = gui
 
 Instance.new("UICorner", mini).CornerRadius = UDim.new(0, 6)
 
-mini.Image = "https://i.imgur.com/SDMduRT.jpeg"
+mini.Image = "rbxassetid://129240920074049"
 mini.ScaleType = Enum.ScaleType.Fit
 mini.AutoButtonColor = true
 
