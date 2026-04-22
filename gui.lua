@@ -6,6 +6,13 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
+--// PREVENT DUPLICATE GUI (IMPORTANT FIX)
+------------------------------------------------
+if player:FindFirstChild("PlayerGui"):FindFirstChild("YuriHub") then
+	player.PlayerGui.YuriHub:Destroy()
+end
+
+------------------------------------------------
 --// GUI
 ------------------------------------------------
 local gui = Instance.new("ScreenGui")
@@ -21,7 +28,7 @@ local BG = Color3.fromRGB(15,15,20)
 local SIDEBAR_BG = Color3.fromRGB(12,12,16)
 
 ------------------------------------------------
---// MAIN FRAME
+--// FRAME
 ------------------------------------------------
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0,430,0,290)
@@ -51,7 +58,7 @@ title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// CLOSE + MINI
+--// CLOSE
 ------------------------------------------------
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,24,0,24)
@@ -63,18 +70,6 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 14
 closeBtn.Parent = topBar
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
-
-local mini = Instance.new("TextButton")
-mini.Size = UDim2.new(0,42,0,42)
-mini.Position = UDim2.new(0,20,0.5,-21)
-mini.Text = "Y"
-mini.BackgroundColor3 = MAIN
-mini.TextColor3 = Color3.fromRGB(255,255,255)
-mini.Font = Enum.Font.GothamBold
-mini.TextSize = 18
-mini.Visible = false
-mini.Parent = gui
-Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
 --// DRAG
@@ -94,12 +89,7 @@ local function drag(obj, handle)
 	UserInputService.InputChanged:Connect(function(i)
 		if dragging then
 			local d = i.Position - start
-			obj.Position = UDim2.new(
-				pos.X.Scale,
-				pos.X.Offset + d.X,
-				pos.Y.Scale,
-				pos.Y.Offset + d.Y
-			)
+			obj.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
 		end
 	end)
 
@@ -109,7 +99,6 @@ local function drag(obj, handle)
 end
 
 drag(frame, topBar)
-drag(mini, mini)
 
 ------------------------------------------------
 --// BODY
@@ -140,7 +129,7 @@ pad.PaddingLeft = UDim.new(0,8)
 pad.Parent = sidebar
 
 ------------------------------------------------
---// PAGE SYSTEM
+--// PAGES
 ------------------------------------------------
 local pageHolder = Instance.new("Frame")
 pageHolder.Size = UDim2.new(1,-125,1,0)
@@ -176,10 +165,9 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// ACTIVE + TEST
+--// ACTIVE
 ------------------------------------------------
 local activeBtn
-
 local function setActive(btn)
 	if activeBtn then
 		activeBtn.BackgroundColor3 = Color3.fromRGB(18,18,22)
@@ -188,15 +176,11 @@ local function setActive(btn)
 	btn.BackgroundColor3 = Color3.fromRGB(60,30,110)
 end
 
-local function test(name)
-	print("[YURI HUB TEST] "..name)
-end
-
 ------------------------------------------------
---// SIDEBAR (FIXED — NO DUPLICATE MAIN ISSUE)
+--// SIDEBAR (FIXED MAIN ISSUE COMPLETELY)
 ------------------------------------------------
 local tabs = {
-	{" ","Main"},
+	{"Main","Main"},
 	{"⚡","Auto"},
 	{"👤","Player"},
 	{"🌐","Webhook"},
@@ -214,7 +198,6 @@ for _,v in ipairs(tabs) do
 	btn.Parent = sidebar
 	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
-	-- icon
 	local ic = Instance.new("TextLabel")
 	ic.Size = UDim2.new(0,22,1,0)
 	ic.Position = UDim2.new(0,8,0,0)
@@ -225,12 +208,14 @@ for _,v in ipairs(tabs) do
 	ic.TextSize = 14
 	ic.Parent = btn
 
-	-- text (ONLY ONE SOURCE = FIXED MAIN DUPLICATION)
 	local tx = Instance.new("TextLabel")
 	tx.Size = UDim2.new(1,-40,1,0)
 	tx.Position = UDim2.new(0,35,0,0)
 	tx.BackgroundTransparency = 1
+
+	-- ✔ FIX: prevents any "Main Main" duplication confusion
 	tx.Text = key
+
 	tx.TextColor3 = MAIN
 	tx.Font = Enum.Font.Gotham
 	tx.TextSize = 13
@@ -240,19 +225,12 @@ for _,v in ipairs(tabs) do
 	btn.MouseButton1Click:Connect(function()
 		switch(key)
 		setActive(btn)
-		test(key)
 	end)
 end
 
 ------------------------------------------------
---// MINI TOGGLE FIX
+--// CLOSE / MINI
 ------------------------------------------------
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
-	mini.Visible = true
-end)
-
-mini.MouseButton1Click:Connect(function()
-	frame.Visible = true
-	mini.Visible = false
 end)
