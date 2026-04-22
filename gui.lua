@@ -60,11 +60,11 @@ title.BackgroundTransparency = 1
 title.Parent = topBar
 
 ------------------------------------------------
---// CLOSE BUTTON (MOVED LEFT)
+--// CLOSE BUTTON
 ------------------------------------------------
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0,24,0,24)
-closeBtn.Position = UDim2.new(1,-40,0.5,-12) -- FIXED (moved left)
+closeBtn.Position = UDim2.new(1,-40,0.5,-12)
 closeBtn.Text = "×"
 closeBtn.BackgroundColor3 = Color3.fromRGB(255,70,120)
 closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
@@ -74,7 +74,7 @@ closeBtn.Parent = topBar
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// MINI UI (Y)
+--// MINI UI
 ------------------------------------------------
 local mini = Instance.new("TextButton")
 mini.Size = UDim2.new(0,42,0,42)
@@ -89,75 +89,60 @@ mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// DRAG MAIN UI (FIXED)
+--// DRAG FUNCTION (FIXED)
 ------------------------------------------------
-do
+local function makeDraggable(obj, dragPart)
 	local dragging = false
-	local start, pos
+	local startPos
+	local startInput
 
-	topBar.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+	dragPart.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
-			start = i.Position
-			pos = frame.Position
+			startInput = input.Position
+			startPos = obj.Position
 		end
 	end)
 
-	UserInputService.InputChanged:Connect(function(i)
-		if dragging then
-			local d = i.Position - start
-			frame.Position = UDim2.new(
-				pos.X.Scale,
-				pos.X.Offset + d.X,
-				pos.Y.Scale,
-				pos.Y.Offset + d.Y
-			)
-		end
+	UserInputService.InputChanged:Connect(function(input)
+		if not dragging then return end
+		if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+
+		local delta = input.Position - startInput
+
+		obj.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
 	end)
 
-	UserInputService.InputEnded:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = false
 		end
 	end)
 end
 
-------------------------------------------------
---// DRAG MINI UI (FIXED)
-------------------------------------------------
-do
-	local dragging = false
-	local start, pos
-
-	mini.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			start = i.Position
-			pos = mini.Position
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(i)
-		if dragging then
-			local d = i.Position - start
-			mini.Position = UDim2.new(
-				pos.X.Scale,
-				pos.X.Offset + d.X,
-				pos.Y.Scale,
-				pos.Y.Offset + d.Y
-			)
-		end
-	end)
-
-	UserInputService.InputEnded:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
-end
+makeDraggable(frame, topBar)
+makeDraggable(mini, mini)
 
 ------------------------------------------------
---// BODY + SIDEBAR
+--// CLOSE / OPEN
+------------------------------------------------
+closeBtn.MouseButton1Click:Connect(function()
+	frame.Visible = false
+	mini.Visible = true
+end)
+
+mini.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	mini.Visible = false
+end)
+
+------------------------------------------------
+--// BODY
 ------------------------------------------------
 local body = Instance.new("Frame")
 body.Size = UDim2.new(1,0,0.82,0)
@@ -165,6 +150,9 @@ body.Position = UDim2.new(0,0,0.18,0)
 body.BackgroundTransparency = 1
 body.Parent = frame
 
+------------------------------------------------
+--// SIDEBAR
+------------------------------------------------
 local sidebar = Instance.new("Frame")
 sidebar.Size = UDim2.new(0,125,1,0)
 sidebar.BackgroundColor3 = SIDEBAR_BG
@@ -182,7 +170,43 @@ pad.PaddingLeft = UDim.new(0,8)
 pad.Parent = sidebar
 
 ------------------------------------------------
---// SIDEBAR BUTTONS (2X SPACING FIX)
+--// PAGE AREA
+------------------------------------------------
+local pageHolder = Instance.new("Frame")
+pageHolder.Size = UDim2.new(1,-125,1,0)
+pageHolder.Position = UDim2.new(0,125,0,0)
+pageHolder.BackgroundTransparency = 1
+pageHolder.Parent = body
+
+local pages = {}
+
+local function newPage(name)
+	local p = Instance.new("Frame")
+	p.Size = UDim2.new(1,0,1,0)
+	p.BackgroundTransparency = 1
+	p.Visible = false
+	p.Parent = pageHolder
+	pages[name] = p
+	return p
+end
+
+local Main = newPage("Main")
+local Auto = newPage("Auto")
+local PlayerP = newPage("Player")
+local Webhook = newPage("Webhook")
+local Misc = newPage("Misc")
+local Config = newPage("Config")
+
+Main.Visible = true
+
+local function switch(tab)
+	for n,p in pairs(pages) do
+		p.Visible = (n == tab)
+	end
+end
+
+------------------------------------------------
+--// SIDEBAR BUTTONS (FIXED SPACING)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -205,10 +229,14 @@ for _,v in ipairs(tabs) do
 		b.Text = "Main"
 		b.TextXAlignment = Enum.TextXAlignment.Center
 	else
-		b.Text = "        "..v[1] -- 2X MORE SPACE ADDED HERE
+		b.Text = "        " .. v[1] -- FIXED VISUAL SPACING
 		b.TextXAlignment = Enum.TextXAlignment.Left
 	end
 
 	b.Parent = sidebar
 	Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
+
+	b.MouseButton1Click:Connect(function()
+		switch(v[2])
+	end)
 end
