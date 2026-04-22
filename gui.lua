@@ -6,15 +6,11 @@ local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 ------------------------------------------------
---// PREVENT DUPLICATE GUI (IMPORTANT FIX)
+--// GUI SINGLE INSTANCE FIX
 ------------------------------------------------
-if player:FindFirstChild("PlayerGui"):FindFirstChild("YuriHub") then
-	player.PlayerGui.YuriHub:Destroy()
-end
+local old = player:WaitForChild("PlayerGui"):FindFirstChild("YuriHub")
+if old then old:Destroy() end
 
-------------------------------------------------
---// GUI
-------------------------------------------------
 local gui = Instance.new("ScreenGui")
 gui.Name = "YuriHub"
 gui.ResetOnSpawn = false
@@ -129,7 +125,7 @@ pad.PaddingLeft = UDim.new(0,8)
 pad.Parent = sidebar
 
 ------------------------------------------------
---// PAGES
+--// PAGE SYSTEM
 ------------------------------------------------
 local pageHolder = Instance.new("Frame")
 pageHolder.Size = UDim2.new(1,-125,1,0)
@@ -165,7 +161,7 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// ACTIVE
+--// ACTIVE BUTTON
 ------------------------------------------------
 local activeBtn
 local function setActive(btn)
@@ -177,10 +173,12 @@ local function setActive(btn)
 end
 
 ------------------------------------------------
---// SIDEBAR (FIXED MAIN ISSUE COMPLETELY)
+--// SIDEBAR (FINAL FIX)
+-- ✔ NO "MAIN MAIN"
+-- ✔ FIRST VALUE IS ONLY VISUAL SPACE SLOT
 ------------------------------------------------
 local tabs = {
-	{"Main","Main"},
+	{"","Main"}, -- ✔ FIX: first is empty so no duplicate look
 	{"⚡","Auto"},
 	{"👤","Player"},
 	{"🌐","Webhook"},
@@ -198,6 +196,7 @@ for _,v in ipairs(tabs) do
 	btn.Parent = sidebar
 	Instance.new("UICorner",btn).CornerRadius = UDim.new(0,8)
 
+	-- ICON SLOT
 	local ic = Instance.new("TextLabel")
 	ic.Size = UDim2.new(0,22,1,0)
 	ic.Position = UDim2.new(0,8,0,0)
@@ -208,14 +207,12 @@ for _,v in ipairs(tabs) do
 	ic.TextSize = 14
 	ic.Parent = btn
 
+	-- TEXT SLOT
 	local tx = Instance.new("TextLabel")
 	tx.Size = UDim2.new(1,-40,1,0)
 	tx.Position = UDim2.new(0,35,0,0)
 	tx.BackgroundTransparency = 1
-
-	-- ✔ FIX: prevents any "Main Main" duplication confusion
 	tx.Text = key
-
 	tx.TextColor3 = MAIN
 	tx.Font = Enum.Font.Gotham
 	tx.TextSize = 13
@@ -229,7 +226,7 @@ for _,v in ipairs(tabs) do
 end
 
 ------------------------------------------------
---// CLOSE / MINI
+--// CLOSE
 ------------------------------------------------
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
