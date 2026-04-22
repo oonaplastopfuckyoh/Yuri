@@ -27,7 +27,7 @@ local BG = Color3.fromRGB(15,15,20)
 local SIDEBAR_BG = Color3.fromRGB(12,12,16)
 
 ------------------------------------------------
---// MAIN FRAME
+--// FRAME
 ------------------------------------------------
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0,430,0,290)
@@ -82,6 +82,7 @@ mini.TextColor3 = Color3.fromRGB(255,255,255)
 mini.Font = Enum.Font.GothamBold
 mini.TextSize = 18
 mini.Visible = false
+mini.ZIndex = 9999
 mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
@@ -103,7 +104,10 @@ local function drag(obj, handle)
 	UserInputService.InputChanged:Connect(function(i)
 		if dragging then
 			local d = i.Position - start
-			obj.Position = UDim2.new(pos.X.Scale,pos.X.Offset+d.X,pos.Y.Scale,pos.Y.Offset+d.Y)
+			obj.Position = UDim2.new(
+				pos.X.Scale,pos.X.Offset+d.X,
+				pos.Y.Scale,pos.Y.Offset+d.Y
+			)
 		end
 	end)
 
@@ -113,7 +117,7 @@ local function drag(obj, handle)
 end
 
 drag(frame, topBar)
-drag(mini)
+drag(mini, mini)
 
 ------------------------------------------------
 --// BODY
@@ -164,14 +168,14 @@ local function newPage(name)
 	return p
 end
 
-local Main = newPage("Main")
+local main = newPage("main")
 local Auto = newPage("Auto")
 local PlayerP = newPage("Player")
 local Webhook = newPage("Webhook")
 local Misc = newPage("Misc")
 local Config = newPage("Config")
 
-Main.Visible = true
+main.Visible = true
 
 local function switch(tab)
 	for n,p in pairs(pages) do
@@ -180,7 +184,7 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// ACTIVE BUTTON
+--// ACTIVE TAB
 ------------------------------------------------
 local activeBtn
 local function setActive(btn)
@@ -192,7 +196,7 @@ local function setActive(btn)
 end
 
 ------------------------------------------------
---// SIDEBAR (FINAL CLEAN)
+--// SIDEBAR (UPDATED MAIN + FONT +2)
 ------------------------------------------------
 local tabs = {
 	{"","main"},
@@ -220,7 +224,7 @@ for _,v in ipairs(tabs) do
 	ic.Text = icon
 	ic.TextColor3 = MAIN
 	ic.Font = Enum.Font.Gotham
-	ic.TextSize = 16
+	ic.TextSize = 14
 	ic.Parent = btn
 
 	local tx = Instance.new("TextLabel")
@@ -228,9 +232,12 @@ for _,v in ipairs(tabs) do
 	tx.Position = UDim2.new(0,35,0,0)
 	tx.BackgroundTransparency = 1
 	tx.Text = key
+
+	-- ✔ FONT SIZE +2
+	tx.TextSize = 15
+
 	tx.TextColor3 = MAIN
 	tx.Font = Enum.Font.Gotham
-	tx.TextSize = 15
 	tx.TextXAlignment = Enum.TextXAlignment.Left
 	tx.Parent = btn
 
@@ -241,7 +248,7 @@ for _,v in ipairs(tabs) do
 end
 
 ------------------------------------------------
---// CLOSE + MINI TOGGLE (FIXED)
+--// CLOSE / MINI TOGGLE
 ------------------------------------------------
 closeBtn.MouseButton1Click:Connect(function()
 	frame.Visible = false
