@@ -1,3 +1,8 @@
+local Workspace = game:GetService("Workspace")
+
+Workspace.StreamingEnabled = false
+Workspace.StreamingMinRadius = 1000000
+
 --// SERVICES
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
