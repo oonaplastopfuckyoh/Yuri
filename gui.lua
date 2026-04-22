@@ -58,9 +58,6 @@ closeBtn.Size = UDim2.new(0,24,0,24)
 closeBtn.Position = UDim2.new(1,-40,0.5,-12)
 closeBtn.Text = "×"
 closeBtn.BackgroundColor3 = Color3.fromRGB(255,70,120)
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 14
 closeBtn.Parent = topBar
 Instance.new("UICorner",closeBtn).CornerRadius = UDim.new(1,0)
 
@@ -77,13 +74,13 @@ mini.Parent = gui
 Instance.new("UICorner",mini).CornerRadius = UDim.new(1,0)
 
 ------------------------------------------------
---// DRAG
+--// DRAG (FIXED)
 ------------------------------------------------
-local function makeDraggable(obj, dragPart)
+local function drag(obj, handle)
 	local dragging = false
 	local start, pos
 
-	dragPart.InputBegan:Connect(function(i)
+	handle.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
 			start = i.Position
@@ -94,12 +91,7 @@ local function makeDraggable(obj, dragPart)
 	UserInputService.InputChanged:Connect(function(i)
 		if dragging then
 			local d = i.Position - start
-			obj.Position = UDim2.new(
-				pos.X.Scale,
-				pos.X.Offset + d.X,
-				pos.Y.Scale,
-				pos.Y.Offset + d.Y
-			)
+			obj.Position = UDim2.new(pos.X.Scale, pos.X.Offset + d.X, pos.Y.Scale, pos.Y.Offset + d.Y)
 		end
 	end)
 
@@ -110,8 +102,8 @@ local function makeDraggable(obj, dragPart)
 	end)
 end
 
-makeDraggable(frame, topBar)
-makeDraggable(mini, mini)
+drag(frame, topBar)
+drag(mini, mini)
 
 ------------------------------------------------
 --// BODY
@@ -142,7 +134,7 @@ pad.PaddingLeft = UDim.new(0,8)
 pad.Parent = sidebar
 
 ------------------------------------------------
---// PAGE SYSTEM (IMPORTANT FIX)
+--// PAGES
 ------------------------------------------------
 local pageHolder = Instance.new("Frame")
 pageHolder.Size = UDim2.new(1,-125,1,0)
@@ -178,7 +170,7 @@ local function switch(tab)
 end
 
 ------------------------------------------------
---// ACTIVE SYSTEM
+--// ACTIVE + TEST
 ------------------------------------------------
 local activeBtn
 
@@ -190,15 +182,12 @@ local function setActive(btn)
 	btn.BackgroundColor3 = Color3.fromRGB(60,30,110)
 end
 
-------------------------------------------------
---// TEST FUNCTION
-------------------------------------------------
 local function test(name)
-	print("[YURI HUB] "..name.." page working")
+	print("[YURI HUB TEST] "..name.." working")
 end
 
 ------------------------------------------------
---// SIDEBAR BUTTONS (MULTI PAGE READY)
+--// SIDEBAR BUTTONS (FIXED SPACING + TEST PER PAGE)
 ------------------------------------------------
 local tabs = {
 	{"Main","Main"},
@@ -230,11 +219,12 @@ for _,v in ipairs(tabs) do
 	b.TextSize = 13
 	b.TextXAlignment = Enum.TextXAlignment.Left
 
+	-- ✔ FIXED spacing (LESS GAP than before)
 	if key == "Main" then
 		b.Text = "Main"
 		b.TextXAlignment = Enum.TextXAlignment.Center
 	else
-		b.Text = "   " .. icon .. "        " .. names[key]
+		b.Text = "   " .. icon .. "   " .. names[key] -- FIXED SPACE (not too big anymore)
 	end
 
 	b.Parent = sidebar
@@ -243,6 +233,19 @@ for _,v in ipairs(tabs) do
 	b.MouseButton1Click:Connect(function()
 		switch(key)
 		setActive(b)
-		test(key)
+		test(key) -- ✔ test per page now
 	end)
 end
+
+------------------------------------------------
+--// MINI FIX (WORKING TOGGLE)
+------------------------------------------------
+closeBtn.MouseButton1Click:Connect(function()
+	frame.Visible = false
+	mini.Visible = true
+end)
+
+mini.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	mini.Visible = false
+end)
